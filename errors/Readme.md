@@ -1,4 +1,4 @@
-- Start Date: 2019-07-10
+- Start Date: 2019-08-28
 - RFC PR: (leave this empty)
 - Prisma Issue: (leave this empty)
 
@@ -12,20 +12,21 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
 
 - [Motivation](#motivation)
 - [Known Errors](#known-errors)
-  - [List of Known Errors](#list-of-known-errors)
-    - [Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)](#prisma-sdk-binaries-and-network-between-sdk-binary-and-binary-data-source)
-    - [Photon.js](#photonjs)
-    - [Prisma Studio](#prisma-studio)
-    - [Prisma CLI](#prisma-cli)
+  * [Error Codes](#error-codes)
+  * [List of Known Errors](#list-of-known-errors)
+    + [Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)](#prisma-sdk-binaries-and-network-between-sdk-binary-and-binary-data-source)
+    + [Photon.js](#photonjs)
+    + [Prisma Studio](#prisma-studio)
+    + [Prisma CLI](#prisma-cli)
       - [Dev](#dev)
       - [Generate](#generate)
       - [Lift](#lift)
 - [Unknown Errors](#unknown-errors)
-  - [Unknown Error Template](#unknown-error-template)
-  - [Unknown Error Handling](#unknown-error-handling)
-    - [Photon.js](#photonjs-1)
-    - [Studio](#studio)
-    - [CLI](#cli)
+  * [Unknown Error Template](#unknown-error-template)
+  * [Unknown Error Handling](#unknown-error-handling)
+    + [Photon.js](#photonjs-1)
+    + [Studio](#studio)
+    + [CLI](#cli)
 - [Error Log Masking](#error-log-masking)
 - [Error Character Encoding](#error-character-encoding)
 
@@ -261,6 +262,8 @@ We must ask the user before collecting such information. This is covered in the 
 // TODO: Replace this CLI telemetry spec link with general telemetry spec link once that is available.
 
 # Error Character Encoding
+
+// TODO: This probably belongs to Photon.js error handling spec.
 
 Photon generates pretty error messages with colors that are very useful for development as they usually pin point the issue.
 
