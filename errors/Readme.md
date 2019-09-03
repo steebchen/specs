@@ -263,7 +263,7 @@ We must ask the user before collecting such information. This is covered in the 
 
 # Error Character Encoding
 
-// TODO: This probably belongs to Photon.js error handling spec.
+// TODO: This probably belongs to Photon.js error handling spec but parts of it like making it parsable and error codes belong to this spec.
 
 Photon generates pretty error messages with colors that are very useful for development as they usually pin point the issue.
 
