@@ -12,21 +12,21 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
 
 - [Motivation](#motivation)
 - [Known Errors](#known-errors)
-  * [Error Codes](#error-codes)
-  * [List of Known Errors](#list-of-known-errors)
-    + [Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)](#prisma-sdk-binaries-and-network-between-sdk-binary-and-binary-data-source)
-    + [Photon.js](#photonjs)
-    + [Prisma Studio](#prisma-studio)
-    + [Prisma CLI](#prisma-cli)
+  - [Error Codes](#error-codes)
+  - [List of Known Errors](#list-of-known-errors)
+    - [Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)](#prisma-sdk-binaries-and-network-between-sdk-binary-and-binary-data-source)
+    - [Photon.js](#photonjs)
+    - [Prisma Studio](#prisma-studio)
+    - [Prisma CLI](#prisma-cli)
       - [Dev](#dev)
       - [Generate](#generate)
       - [Lift](#lift)
 - [Unknown Errors](#unknown-errors)
-  * [Unknown Error Template](#unknown-error-template)
-  * [Unknown Error Handling](#unknown-error-handling)
-    + [Photon.js](#photonjs-1)
-    + [Studio](#studio)
-    + [CLI](#cli)
+  - [Unknown Error Template](#unknown-error-template)
+  - [Unknown Error Handling](#unknown-error-handling)
+    - [Photon.js](#photonjs-1)
+    - [Studio](#studio)
+    - [CLI](#cli)
 - [Error Log Masking](#error-log-masking)
 - [Error Character Encoding](#error-character-encoding)
 
@@ -76,6 +76,8 @@ Marking every known error with a structured error code prefix and a number would
 The following sections(s) contain lists of currently known errors per tool. We'll update this list as more error conditions are identified.
 
 Note that some errors might bubble at a lower layer and be presented at an upper later for developer experience.
+
+WIP https://docs.google.com/spreadsheets/d/17Vd01CG8PDyqyaXpj1qDmuzBJ4VQgXBIbtvaV0uCUmQ/edit#gid=0
 
 ### Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)
 
