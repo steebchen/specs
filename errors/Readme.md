@@ -59,17 +59,88 @@ This document covers our error handling strategy and covers the following:
 2. Error log masking
 3. Error character encoding
 
-As the Prisma SDK acts as the interface between binaries and SDK clients. A lot of error handling happens in SDK layer.
+As the Prisma SDK acts as the interface between binaries and SDK clients. A lot of error handling is managed in SDK layer.
+
+# Error Causes, Codes, and Handling Strategies
+
+There can be various reasons for a request/operation to fail. This section broadly classifies potential error causes and handling strategies.
+
+## Validation Errors
+
+These are usually caused by faulty user input. For example,
+
+- Incorrect database credentials
+- Invalid data source URL
+- Malformed schema syntax
+
+Handling strategy: Any user input must be validated and user should be notified about the validation error details.
+
+## Prisma Error (Bug is Prisma code)
+
+These are caused due to a bug in a Prisma component. For example,
+
+- Photon builds incorrect query for the query engine
+- Lift generates incorrect migration steps
+
+This occurrence of these should be rare.
+
+Handling strategy: User should be notified about the Prisma bug and should be prompted to send the error report to Prisma team manually or via telemetry.
+
+## OS Error
+
+These are caused due to an OS system call failure. For example,
+
+- SDK failed to bind a port for query engine
+
+Handling strategy: Notify the user by relaying the message from OS and suggesting them to retry. They might need to free up resources or do something at the OS level.
+
+In certain cases, like when a port collision, Prisma SDK can try to retry gracefully as well with a different port.
+
+## Data Source Error
+
+These are caused when a data source lacks availability, For example,
+
+- Database is not reachable
+- Database timeout
+
+Handling strategy: Notify the user by relaying the error message from data source.
+
+## Domain Error
+
+These are usually caused when a database constraint fails. For example,
+
+- Record not found
+- Unique constraint violation
+- Foreign key constraint violation
+- Custom constraint violation
+
+Handling strategy: Domain errors would usually originate from the data source and the underlying message should be relayed to the user with some context.
+
+# Error Codes
+
+Error codes made identification/classification of error easier. Moreover, for tools like Photon, they also make programmatically handling error conditions easier.
+
+This section describes our error prefix and error numbering strategy.
+
+## Prefix
+
+Marking every known error with a structured error code prefix and a number would make error identification and parsing easier for the users. We can also recommend third party generators/tools to follow the same error code convention.
+
+| Error Cause        | Prefix |
+| ------------------ | ------ |
+| Validation Error   | VE     |
+| Prisma Error (Bug) | PE     |
+| OS Error           | OSE    |
+| Data source Error  | DSE    |
+| Domain Error       | DE     |
+
+## Error Code Numbers
+
+// TODO: Dump thoughts about error code numbers
 
 # Known Errors
 
 Whenever we show an error, we should always show a path forward towards resolution. If we don't know the path forward, we should at least link to a place to get help.
-
-## Error Codes
-
-Marking every known error with a structured error code prefix and a number would make error identification and parsing easier for the users.
-
-// TODO: Dump thoughts about error codes
 
 ## List of Known Errors
 
@@ -105,8 +176,7 @@ An error can occur in any of the following tools that currently make up Prisma 2
 
 When an unknown error occurs, **our primary goal** is to get the user to report it by creating a new GitHub issue or send the error report to us via telemetry.
 
-Error messages should include clear guidelines of where to report the issue and what information to include. The following sections provide the templates for
-these error message per tool.
+Error messages should include clear guidelines of where to report the issue and what information to include. The following sections provide the templates for these error message per tool.
 
 ## Unknown Error Template
 
@@ -294,3 +364,33 @@ To solve these two use case, Photon can do the following:
 This would solve the production logs use case. When `NODE_ENV` is set to `development` or is unset, Photon can emit logs with colors. However, when `NODE_ENV` is set to `production` Photon can omit colors from the logs.
 
 2. While Point 1 might already be enough for tools like Studio as well, Photon can additionally offer `prettyLogs` as a constructor argument to switch off the pretty error logging.
+
+# WIP Notes
+
+## MySQL
+
+https://www.fromdual.com/mysql-error-codes-and-messages
+
+https://docs.oracle.com/cd/E19078-01/mysql/mysql-refman-5.0/error-handling.html
+
+https://www.oreilly.com/library/view/mysql-reference-manual/0596002653/apas02.html
+
+https://dev.mysql.com/doc/refman/5.5/en/server-error-reference.html
+
+## Postgres
+
+https://www.postgresql.org/docs/10/errcodes-appendix.html
+
+https://www.postgresql.org/docs/8.1/errcodes-appendix.html
+
+https://www.enterprisedb.com/docs/en/9.2/pg/errcodes-appendix.html
+
+## SQLite
+
+https://www.sqlite.org/rescode.html
+
+https://www.sqlite.org/c3ref/intro.html
+
+https://www.sqlite.org/c3ref/c_abort.html
+
+https://www.sqlite.org/c3ref/errcode.html
