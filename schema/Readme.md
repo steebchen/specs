@@ -239,7 +239,7 @@ Field names are:
 
 ### Data Types
 
-Prisma has a couple core primitive types. How these core types are defined may vary across connectors. Every connector **must** implement these core types. It's
+Prisma has several core primitive types. How these core types are defined may vary across connectors. Every connector **must** implement these core types. It's
 part of the connectors interface to Prisma. If a connector doesn't have a core type, it should provide a **best-effort implementation**.
 
 | Type     | Description           |
@@ -928,8 +928,15 @@ datasource pg {
 }
 ```
 
-In this case `env` represents the outside environment. The `provider` must be static and cannot be an environment variable. Our general philosophy is that you
-want to generate environment variables **as late as possible**. The sections below describe this behavior.
+You can also provide a default if the environment variable is not specified:
+
+```groovy
+  provider = "sqlite"
+  url      = env("SQLITE_PATH", default: "file.db")
+```
+
+The `provider` must be static and cannot be an environment variable. Our general philosophy is that you want to generate environment variables **as late as
+possible**. The sections below describe this behavior.
 
 ### Introspect Behavior
 
@@ -966,8 +973,8 @@ $ prisma generate
 But runtime will:
 
 ```js
-import Photon from '@generated/photon'
-const photon = new Photon()
+import Photon from "@generated/photon";
+const photon = new Photon();
 // Thrown: required `POSTGRES_URL` variable not found
 ```
 
