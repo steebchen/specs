@@ -22,13 +22,16 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
   * [Error Code Numbers](#error-code-numbers)
 - [Known Errors](#known-errors)
   * [List of Known Errors](#list-of-known-errors)
-    + [Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)](#prisma-sdk-binaries-and-network-between-sdk-binary-and-binary-data-source)
+    + [Prisma SDK](#prisma-sdk)
+      - [Validation Error](#validation-error)
     + [Photon.js](#photonjs)
     + [Prisma Studio](#prisma-studio)
     + [Prisma CLI](#prisma-cli)
+      - [Init](#init)
       - [Dev](#dev)
       - [Generate](#generate)
       - [Lift](#lift)
+      - [Introspect](#introspect)
 - [Unknown Errors](#unknown-errors)
   * [Unknown Error Template](#unknown-error-template)
   * [Unknown Error Handling](#unknown-error-handling)
@@ -37,10 +40,11 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
     + [CLI](#cli)
 - [Error Log Masking](#error-log-masking)
 - [Error Character Encoding](#error-character-encoding)
-- [WIP Notes](#wip-notes)
-  * [MySQL](#mysql)
-  * [Postgres](#postgres)
-  * [SQLite](#sqlite)
+- [Appendix](#appendix)
+  * [Common Database Errors](#common-database-errors)
+    + [MySQL](#mysql)
+    + [PostgreSQL](#postgresql)
+    + [SQLite](#sqlite)
 
 <!-- tocstop -->
 
@@ -84,6 +88,7 @@ These are usually caused by faulty user input. For example,
 - Incorrect database credentials
 - Invalid data source URL
 - Malformed schema syntax
+- Invalid type input to Photon (`String` in place of `Int` for example)
 
 Handling strategy: Any user input must be validated and user should be notified about the validation error details.
 
@@ -98,10 +103,13 @@ This occurrence of these should be rare.
 
 Handling strategy: User should be notified about the Prisma bug and should be prompted to send the error report to Prisma team manually or via telemetry.
 
+TODO: These are maybe just bugs and maybe do not belong to this spec.
+
 ## OS Error
 
 These are caused due to an OS system call failure. For example,
 
+- The available binary is not compiled for this platform
 - SDK failed to bind a port for query engine
 
 Handling strategy: Notify the user by relaying the message from OS and suggesting them to retry. They might need to free up resources or do something at the OS level.
@@ -142,13 +150,17 @@ Marking every known error with a structured error code prefix and a number would
 | ------------------ | ------ |
 | Validation Error   | VE     |
 | Prisma Error (Bug) | PE     |
-| OS Error           | OSE    |
-| Data source Error  | DSE    |
 | Domain Error       | DE     |
+| Data source Error  | DSE    |
+| OS Error           | OSE    |
 
 ## Error Code Numbers
 
 // TODO: Dump thoughts about error code numbers
+SDK 10xx
+Photon/Custom generators 20xx
+Studio 30xx
+CLI 40xx
 
 # Known Errors
 
@@ -156,25 +168,86 @@ Whenever we show an error, we should always show a path forward towards resoluti
 
 ## List of Known Errors
 
+// TODO: This can move to appendix
+
 The following sections(s) contain lists of currently known errors per tool. We'll update this list as more error conditions are identified.
 
 Note that some errors might bubble at a lower layer and be presented at an upper later for developer experience.
 
-WIP https://docs.google.com/spreadsheets/d/17Vd01CG8PDyqyaXpj1qDmuzBJ4VQgXBIbtvaV0uCUmQ/edit#gid=0
+TODO: WIP https://docs.google.com/spreadsheets/d/17Vd01CG8PDyqyaXpj1qDmuzBJ4VQgXBIbtvaV0uCUmQ/edit#gid=0
 
-### Prisma SDK, binaries and network (between SDK-Binary and Binary-Data source)
+### Prisma SDK
+
+SDK acts as the interface between the binaries and the tools. This section covers errors from SDK, binaries and the network between SDK ⇆ Binary and Binary ⇆ Data source.
+
+#### Validation Error
+
+| Title                                | Description                                                                       | Prefix | Code |
+| ------------------------------------ | --------------------------------------------------------------------------------- | ------ | ---- |
+| Schema string input validation       | Database URL in Prisma schema fails to parse                                      | VE     |      |
+| Schema parsing error                 | User input schema is invalid                                                      | VE     |      |
+| Incorrect database credentials       | User inputted wrong database credentials                                          | VE     |      |
+| Database not reachable               | The URL is not reachable (bad URL or network too)                                 | VE     |      |
+| Incorrect Prisma query generated     | Query built by query engine is incorrect                                          | PE     |      |
+| Incorrect migration generated        | The generated migration is incorrect due to invalid query or existing tables      | PE     |      |
+| Introspection failure                | Introspection failed to produce a schema file                                     | PE     |      |
+| Database errors - corruption         | The database is reachable but corrupted                                           | DSE    |      |
+| Database timeout                     | Credentials are correct but request timed out                                     | DSE    |      |
+| Binary for the wrong platform        | The downloaded binary is not compiled for this platform                           | OSE    |      |
+| Unable to bind binary to a free port | Port already in use                                                               | OSE    |      |
+| Type mismatch - invalid ID           | Invalid UUID in String (TODO: Open question: shim)                                | VE     |      |
+| Type mismatch - invalid Date         | https://github.com/prisma/photonjs/issues/212 (TODO: Open question: shim)         | VE     |      |
+| Type mismatch - invalid JSON         | https://github.com/prisma/photonjs/issues/60 (TODO: Open question: shim/coercion) | VE     |      |
+| Type mismatch - invalid custom type  | https://github.com/prisma/specs/issues/119 (TODO: Open question: shim/coercion)   | VE     |      |
 
 ### Photon.js
 
+// TODO: Photon error structure -- since Photon errors must be parsable.
+// TODO: Same applies to SDK part of Lift.
+
+| Title                       | Description                                                                                                  | Prefix | Code |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ | ------ | ---- |
+| Invalid Photon call         | In JS or TS with "any" cast. This could be querying non-existent fields or wrong arguments or incorrect null | VE     |      |
+| Value too long              | The value is too long for the column                                                                         | VE     |      |
+| Photon query building error | Photon fails to build the query correctly                                                                    | PE     |      |
+| Record not found error      | The record specified by where condition does not exist                                                       | DE     |      |
+| Unique key violation error  | Database level constraint violation                                                                          | DE     |      |
+| Foreign key violation error | Database level constraint violation                                                                          | DE     |      |
+| Custom constraint violation | Database level constraint violation                                                                          | DE     |      |
+| Stored value is invalid     | Example: https://github.com/prisma/photonjs/issues/214                                                       | DE     |      |
+
+Note: Domain errors originate in Query engine but are written down in Photon (which is a major consumer of Query Engine). This might move to SDK though.
+
 ### Prisma Studio
 
+Studio has two workflows:
+
+Electron app: Credentials from the UI → Introspection → Prisma schema → Valid Prisma project
+Web app: `prisma2 dev` → Provides Prisma schema i.e a Valid Prisma project
+
+| Title                         | Description                                   | Prefix | Code |
+| ----------------------------- | --------------------------------------------- | ------ | ---- |
+| Invalid Photon call generated | Studio builds invalid Photon call             | PE     |      |
+| Introspection failure         | Introspection failed to produce a schema file | PE     |      |
+
 ### Prisma CLI
+
+#### Init
+
+| S.No. | Title                                  | Description                             |     | Code |
+| ----- | -------------------------------------- | --------------------------------------- | --- | ---- |
+| 1     | Directory already contains schema file | Directory is an existing Prisma project | VE  | 4000 |
+| 2     | Starter kit                            | Directory is not empty                  | VE  | 4001 |
+
+More issues for init command failures are covered here: https://prisma-specs.netlify.com/cli/init/errors/
 
 #### Dev
 
 #### Generate
 
 #### Lift
+
+#### Introspect
 
 # Unknown Errors
 
@@ -377,32 +450,26 @@ This would solve the production logs use case. When `NODE_ENV` is set to `develo
 
 2. While Point 1 might already be enough for tools like Studio as well, Photon can additionally offer `prettyLogs` as a constructor argument to switch off the pretty error logging.
 
-# WIP Notes
+# Appendix
 
-## MySQL
+## Common Database Errors
 
-https://www.fromdual.com/mysql-error-codes-and-messages
+### MySQL
 
-https://docs.oracle.com/cd/E19078-01/mysql/mysql-refman-5.0/error-handling.html
+- https://www.fromdual.com/mysql-error-codes-and-messages
+- https://docs.oracle.com/cd/E19078-01/mysql/mysql-refman-5.0/error-handling.html
+- https://www.oreilly.com/library/view/mysql-reference-manual/0596002653/apas02.html
+- https://dev.mysql.com/doc/refman/5.5/en/server-error-reference.html
 
-https://www.oreilly.com/library/view/mysql-reference-manual/0596002653/apas02.html
+### PostgreSQL
 
-https://dev.mysql.com/doc/refman/5.5/en/server-error-reference.html
+- https://www.postgresql.org/docs/10/errcodes-appendix.html
+- https://www.postgresql.org/docs/8.1/errcodes-appendix.html
+- https://www.enterprisedb.com/docs/en/9.2/pg/errcodes-appendix.html
 
-## Postgres
+### SQLite
 
-https://www.postgresql.org/docs/10/errcodes-appendix.html
-
-https://www.postgresql.org/docs/8.1/errcodes-appendix.html
-
-https://www.enterprisedb.com/docs/en/9.2/pg/errcodes-appendix.html
-
-## SQLite
-
-https://www.sqlite.org/rescode.html
-
-https://www.sqlite.org/c3ref/intro.html
-
-https://www.sqlite.org/c3ref/c_abort.html
-
-https://www.sqlite.org/c3ref/errcode.html
+- https://www.sqlite.org/rescode.html
+- https://www.sqlite.org/c3ref/intro.html
+- https://www.sqlite.org/c3ref/c_abort.html
+- https://www.sqlite.org/c3ref/errcode.html
