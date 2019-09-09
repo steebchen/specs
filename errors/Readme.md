@@ -21,17 +21,16 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
   * [Prefix](#prefix)
   * [Error Code Numbers](#error-code-numbers)
 - [Known Errors](#known-errors)
-  * [List of Known Errors](#list-of-known-errors)
-    + [Prisma SDK](#prisma-sdk)
-      - [Validation Error](#validation-error)
-    + [Photon.js](#photonjs)
-    + [Prisma Studio](#prisma-studio)
-    + [Prisma CLI](#prisma-cli)
-      - [Init](#init)
-      - [Dev](#dev)
-      - [Generate](#generate)
-      - [Lift](#lift)
-      - [Introspect](#introspect)
+  * [Prisma SDK](#prisma-sdk)
+    + [Unclassified SDK errors](#unclassified-sdk-errors)
+  * [Photon.js](#photonjs)
+  * [Prisma Studio](#prisma-studio)
+  * [Prisma CLI](#prisma-cli)
+    + [Init](#init)
+    + [Dev](#dev)
+    + [Generate](#generate)
+    + [Lift](#lift)
+    + [Introspect](#introspect)
 - [Unknown Errors](#unknown-errors)
   * [Unknown Error Template](#unknown-error-template)
   * [Unknown Error Handling](#unknown-error-handling)
@@ -54,19 +53,19 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
 
 // TODO: Move image to figma
 
-| Component   | Description                                                           |
-| ----------- | --------------------------------------------------------------------- |
-| SDK Clients | Photon.js, Studio, Prisma CLI: dev, lift, generate commands, etc.     |
-| Prisma SDK  | Helps tools interact with binaries. Spec [here](../sdk-js/Readme.md)  |
-| Binaries    | Artifacts of Prisma 2 compilation. Spec [here](../binaries/Readme.md) |
-| Data source | A database or any other data source supported by Prisma               |
+| Component   | Description                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| SDK Users   | Photon.js, Studio, Prisma CLI: dev, lift, generate commands, etc.                           |
+| Prisma SDK  | Helps tools interact with binaries. Spec [here](../sdk-js/Readme.md)                        |
+| Binaries    | Artifacts of Prisma 2 compilation and a part of the SDK. Spec [here](../binaries/Readme.md) |
+| Data source | A database or any other data source supported by Prisma                                     |
 
 Prisma 2 ecosystem provides various layers of tools that communicate with each other to provide desired outcome.
 
 Broadly, the life-cycle of a request (Query request or CLI command) can be seen in this architecture diagram.
 
-| SDK Client | →   | Prisma SDK | →   | Binaries | →   | Data source |
-| ---------- | --- | ---------- | --- | -------- | --- | ----------- |
+| SDK User | →   | Prisma SDK | →   | Binaries | →   | Data source |
+| -------- | --- | ---------- | --- | -------- | --- | ----------- |
 
 
 **Note**: An error can happen in any parts of this stack and it bubbles up from that part to the surface area. For example, a unique constraint violation happens in the data source and the first programmatically parsable occurrence happens in the binary. However the same error is handled by Prisma SDK and eventually by the consumer of the SDK (say Photon). We have to document the same error in all these different specs as it bubbles up, thus defining a clear errors interface at each layer. This spec will eventually contain links to this distributed spec work.
@@ -148,25 +147,26 @@ This section describes our error prefix and error numbering strategy.
 
 Marking every known error with a structured error code prefix and a number would make error identification and parsing easier for the users. We can also recommend third party generators/tools to follow the same error code convention.
 
-| Error Cause        | Prefix |
-| ------------------ | ------ |
-| Validation Error   | VE     |
-| Prisma Error (Bug) | PE     |
-| Domain Error       | DE     |
-| Data source Error  | DSE    |
-| OS Error           | OSE    |
+| Error Cause        | Prefix | Range |
+| ------------------ | ------ | ----- |
+| Validation Error   | VE     | xx0x  |
+| Prisma Error (Bug) | PE     | xx1x  |
+| Domain Error       | DE     | xx2x  |
+| Data Source Error  | DSE    | xx3x  |
+| OS Error           | OSE    | xx4x  |
 
 ## Error Code Numbers
 
 An error code should provide users context of what might be wrong and where. This requires product wise error code numbering alongside an error category prefix defined in the last section.
 
-| Component                | Range |
-| ------------------------ | ----- |
-| Binaries                 | xxxx  |
-| SDK                      | 10xx  |
-| Photon/Custom generators | 20xx  |
-| Studio                   | 30xx  |
-| CLI                      | 40xx  |
+| Component                      | Range     |
+| ------------------------------ | --------- |
+| Binaries                       | xxxx      |
+| SDK                            | 10xx      |
+| Photon.js                      | 20xx      |
+| Studio                         | 30xx      |
+| CLI                            | 40xx      |
+| Custom Generators, Nexus, etc. | 50xx-90xx |
 
 Note: Binaries are only consumed through the SDK. All known binary errors will have a defined error interface in SDK. Hence, there is no special range/code for binary only errors.
 
@@ -181,96 +181,126 @@ This means that a single error will have separate error codes based on where is 
 
 # Known Errors
 
-Whenever we show an error, we should always show a path forward towards resolution. If we don't know the path forward, we should at least link to a place to get help.
-
-## List of Known Errors
-
-// TODO: This can move to appendix
-
-The following sections(s) contain lists of currently known errors per tool. We'll update this list as more error conditions are identified.
-
-Note that some errors might bubble at a lower layer and be presented at an upper later for developer experience.
-
-TODO: WIP https://docs.google.com/spreadsheets/d/17Vd01CG8PDyqyaXpj1qDmuzBJ4VQgXBIbtvaV0uCUmQ/edit#gid=0
-
-### Prisma SDK
+## Prisma SDK
 
 SDK acts as the interface between the binaries and the tools. This section covers errors from SDK, binaries and the network between SDK ⇆ Binary and Binary ⇆ Data source.
 
-#### Validation Error
+| Title                                                     | Description                                                                  | Prefix | Code    |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- | ------ | ------- |
+| Schema parsing error (multiple things, syntax)            | User input schema is invalid                                                 | VE     | VE1000  |
+| Schema semantic error (multiple things, semantic)         | Parses but incorrect "meaning" like relation ambiguity                       | VE     | VE1001  |
+| Schema string input validation                            | Database URL in Prisma schema fails to parse                                 | VE     | VE1002  |
+| Incorrect database credentials                            | User inputted wrong database credentials                                     | VE     | VE1003  |
+| Database not reachable                                    | The URL is not reachable (bad URL or network too)                            | VE     | VE1004  |
+| Incorrect Prisma query generated                          | Query built by query engine is incorrect                                     | PE     | PE1010  |
+| Incorrect migration generated (multiple things, rollback) | The generated migration is incorrect due to invalid query or existing tables | PE     | PE1011  |
+| Destructive migration                                     | Migration possible with destructive changes i.e. data loss                   | PE     | PE1012  |
+| Introspection failure                                     | Introspection failed to produce a schema file                                | PE     | PE1013  |
+| Incorrect DMMF generated                                  | Schema is parsed but DMMF is incorrect                                       | PE     | PE1014  |
+| Value too long                                            | The value is too long for the column                                         | DE     | DE1020  |
+| Record not found error                                    | The record specified by where condition does not exist                       | DE     | DE1021  |
+| Unique key violation error                                | `UniqueConstraintViolation: Unique constraint failed: ${field_name}`         | DE     | DE1022  |
+| Foreign key violation error                               | Database level constraint violation                                          | DE     | DE1023  |
+| Custom constraint violation                               | Database level constraint violation                                          | DE     | DE1024  |
+| Stored value is invalid                                   | Example: https://github.com/prisma/photonjs/issues/214                       | DE     | DE1025  |
+| Database errors - corruption                              | The database is reachable but corrupted                                      | DSE    | DSE1030 |
+| Database timeout                                          | Credentials are correct but request timed out                                | DSE    | DSE1031 |
+| Database does not exist                                   | A database with the provided name does not exist                             | DSE    | DSE1032 |
+| Database creation failed                                  | `DatabaseCreationError: Database creation error: ${error}`                   | DSE    | DSE1033 |
+| Binary for the wrong platform                             | The downloaded binary is not compiled for this platform                      | OSE    | DSE1040 |
+| Unable to bind binary to a free port                      | Port already in use                                                          | OSE    | DSE1041 |
 
-| Title                                                     | Description                                                                       | Prefix | Code |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------- | ------ | ---- |
-| Schema string input validation                            | Database URL in Prisma schema fails to parse                                      | VE     |      |
-| Schema parsing error (multiple things, syntax)            | User input schema is invalid                                                      | VE     |      |
-| Schema semantic error (multiple things, semantic)         | Parses but incorrect "meaning" like relation ambiguity                            | VE     |      |
-| Incorrect database credentials                            | User inputted wrong database credentials                                          | VE     |      |
-| Database not reachable                                    | The URL is not reachable (bad URL or network too)                                 | VE     |      |
-| Incorrect Prisma query generated                          | Query built by query engine is incorrect                                          | PE     |      |
-| Incorrect migration generated (multiple things, rollback) | The generated migration is incorrect due to invalid query or existing tables      | PE     |      |
-| Introspection failure                                     | Introspection failed to produce a schema file                                     | PE     |      |
-| Database errors - corruption                              | The database is reachable but corrupted                                           | DSE    |      |
-| Database timeout                                          | Credentials are correct but request timed out                                     | DSE    |      |
-| Database does not exist                                   | A database with the provided name does not exist                                  | DSE    |      |
-| Binary for the wrong platform                             | The downloaded binary is not compiled for this platform                           | OSE    |      |
-| Unable to bind binary to a free port                      | Port already in use                                                               | OSE    |      |
-| Type mismatch - invalid ID                                | Invalid UUID in String (TODO: Open question: shim)                                | VE     |      |
-| Type mismatch - invalid Date                              | https://github.com/prisma/photonjs/issues/212 (TODO: Open question: shim)         | VE     |      |
-| Type mismatch - invalid JSON                              | https://github.com/prisma/photonjs/issues/60 (TODO: Open question: shim/coercion) | VE     |      |
-| Type mismatch - invalid custom type                       | https://github.com/prisma/specs/issues/119 (TODO: Open question: shim/coercion)   | VE     |      |
+### Unclassified SDK errors
 
-### Photon.js
+| Title                               | Description                                                                       | Prefix | Code |
+| ----------------------------------- | --------------------------------------------------------------------------------- | ------ | ---- |
+| Type mismatch - invalid ID          | Invalid UUID in String (TODO: Open question: shim)                                | ???    | ???  |
+| Type mismatch - invalid Date        | https://github.com/prisma/photonjs/issues/212 (TODO: Open question: shim)         | ???    | ???  |
+| Type mismatch - invalid JSON        | https://github.com/prisma/photonjs/issues/60 (TODO: Open question: shim/coercion) | ???    | ???  |
+| Type mismatch - invalid custom type | https://github.com/prisma/specs/issues/119 (TODO: Open question: shim/coercion)   | ???    | ???  |
 
-// TODO: Photon error structure -- since Photon errors must be parsable.
-// TODO: Same applies to SDK part of Lift.
-// TODO: All the domain errors also existing in SDK and binaries
+## Photon.js
 
-| Title                       | Description                                                                                                  | Prefix | Code |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------ | ------ | ---- |
-| Invalid Photon call         | In JS or TS with "any" cast. This could be querying non-existent fields or wrong arguments or incorrect null | VE     |      |
-| Value too long              | The value is too long for the column                                                                         | VE     |      |
-| Photon query building error | Photon fails to build the query correctly                                                                    | PE     |      |
-| Connection error            | Query engine was started but the process crashed                                                             | PE     |      |
-| Record not found error      | The record specified by where condition does not exist                                                       | DE     |      |
-| Unique key violation error  | `UniqueConstraintViolation: Unique constraint failed: ${field_name}`                                         | DE     |      |
-| Foreign key violation error | Database level constraint violation                                                                          | DE     |      |
-| Custom constraint violation | Database level constraint violation                                                                          | DE     |      |
-| Stored value is invalid     | Example: https://github.com/prisma/photonjs/issues/214                                                       | DE     |      |
-| Connection error            | Query engine was started but the process died                                                                | OSE    |      |
+| Title                         | Description                                                                                                  | Prefix | Code    | Base Code |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------ | ------ | ------- | --------- |
+| Invalid Photon call           | In JS or TS with "any" cast. This could be querying non-existent fields or wrong arguments or incorrect null | VE     | VE2000  |           |
+| Photon query building error   | Photon fails to build the query correctly                                                                    | PE     | PE2010  |           |
+| Data source Connection error  | Query engine is reachable but database is not responding                                                     | PE     | PE2011  | VE1004    |
+| Value too long                | The value is too long for the column                                                                         | DE     | DE2020  | VE1020    |
+| Record not found error        | The record specified by where condition does not exist                                                       | DE     | DE2021  | DE1021    |
+| Unique key violation error    | `UniqueConstraintViolation: Unique constraint failed: ${field_name}`                                         | DE     | DE2022  | DE1022    |
+| Foreign key violation error   | Database level constraint violation on foreign key                                                           | DE     | DE2023  | DE1023    |
+| Custom constraint violation   | Database level constraint violation                                                                          | DE     | DE2024  | DE1024    |
+| Stored value is invalid       | Example: https://github.com/prisma/photonjs/issues/214                                                       | DE     | DE2025  | DE1025    |
+| Query engine connection error | Query engine was started but the process died                                                                | OSE    | OSE2040 |           |
 
-Note: Domain errors originate in Query engine but are written down in Photon (which is a major consumer of Query Engine). This might move to SDK though.
+Since Photon results are consumed in user-land, it should have a parsable error structure:
 
-### Prisma Studio
+Error object:
+
+```json
+{
+  code: "<ERROR_CODE>"
+  message: "<ERROR_MESSAGE>"
+}
+```
+
+Serialization of the error message (default `toString`) will have the following template:
+
+```
+${ERROR_CODE}: ${ERROR_MESSAGE}
+```
+
+## Prisma Studio
 
 Studio has two workflows:
 
 Electron app: Credentials from the UI → Introspection → Prisma schema → Valid Prisma project
 Web app: `prisma2 dev` → Provides Prisma schema i.e a Valid Prisma project
 
-| Title                           | Description                                   | Prefix | Code |
-| ------------------------------- | --------------------------------------------- | ------ | ---- |
-| Invalid Photon call generated   | Studio builds invalid Photon call             | PE     |      |
-| Electron: Introspection failure | Introspection failed to produce a schema file | PE     |      |
+| Title                           | Description                                   | Prefix | Code   | Base Code |
+| ------------------------------- | --------------------------------------------- | ------ | ------ | --------- |
+| Invalid Photon call generated   | Studio builds invalid Photon call             | PE     | PE3000 |           |
+| Electron: Introspection failure | Introspection failed to produce a schema file | PE     | PE3001 | PE1013    |
+| Incorrect DMMF                  | DMMF generated from the schema has a bug      | PE     | PE3010 | PE1013    |
 
-### Prisma CLI
+## Prisma CLI
 
-#### Init
+### Init
 
-| Title                                  | Description                                                |     | Code |
-| -------------------------------------- | ---------------------------------------------------------- | --- | ---- |
-| Directory already contains schema file | Directory is an existing Prisma project                    | VE  |      |
-| Starter kit                            | Directory is not empty                                     | VE  |      |
-| Database creation failed               | `DatabaseCreationError: Database creation error: ${error}` | DSE |      |
+| Title                                  | Description                                                | Prefix | Code    | Base Code |
+| -------------------------------------- | ---------------------------------------------------------- | ------ | ------- | --------- |
+| Directory already contains schema file | Directory is an existing Prisma project                    | VE     | VE4000  |           |
+| Starter kit                            | Directory is not empty                                     | VE     | VE4001  |           |
+| Introspection failure                  | Introspection failed to produce a schema file              | PE     | PE4010  | PE1013    |
+| Database creation failed               | `DatabaseCreationError: Database creation error: ${error}` | DSE    | DSE4030 | DSE1033   |
 
 More issues for init command failures are covered here: https://prisma-specs.netlify.com/cli/init/errors/
 
-#### Dev
+### Dev
 
-#### Generate
+| Title                    | Description                                                | Prefix | Code    | Base Code |
+| ------------------------ | ---------------------------------------------------------- | ------ | ------- | --------- |
+| Database creation failed | `DatabaseCreationError: Database creation error: ${error}` | DSE    | DSE4031 | DSE1033   |
 
-#### Lift
+### Generate
 
-#### Introspect
+| Title          | Description                              | Prefix | Code   | Base Code |
+| -------------- | ---------------------------------------- | ------ | ------ | --------- |
+| Incorrect DMMF | DMMF generated from the schema has a bug | PE     | PE4010 | PE1013    |
+
+### Lift
+
+| Title                      | Description                                                                  | Prefix | Code   | Base Code |
+| -------------------------- | ---------------------------------------------------------------------------- | ------ | ------ | --------- |
+| Migration failure          | The generated migration is incorrect due to invalid query or existing tables | PE     | PE4010 | PE1011    |
+| Destructive steps detected | Migration possible with destructive changes i.e. data loss                   | PE     | PE4011 | PE1012    |
+
+### Introspect
+
+| Title                 | Description                                   | Prefix | Code   | Base Code |
+| --------------------- | --------------------------------------------- | ------ | ------ | --------- |
+| Introspection failure | Introspection failed to produce a schema file | PE     | PE4010 | PE1013    |
 
 # Unknown Errors
 
@@ -462,8 +492,6 @@ There are two use cases for disabling/better structuring the error logs:
 1. In Production logs, one might want to read the error messages thrown by Photon.
 
 2. In tools like Studio, it currently strips the ANSI characters (like [this](https://codesandbox.io/s/photon-pretty-errors-m4l77)) and displays the output as the error message.
-
-// TODO: Stripping ANSI works well but it is still not parsable. A better Photon error structure with error code and message which serializes to something like `<ERROR_CODE>: <ERROR_MESSAGE>`
 
 To solve these two use case, Photon can do the following:
 
