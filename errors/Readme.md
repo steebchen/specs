@@ -13,7 +13,7 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
 - [Motivation](#motivation)
 - [Error Causes, Codes, and Handling Strategies](#error-causes-codes-and-handling-strategies)
   * [Validation Errors](#validation-errors)
-  * [Prisma Error (Bug is Prisma code)](#prisma-error-bug-is-prisma-code)
+  * [Prisma Error](#prisma-error)
   * [OS Error](#os-error)
   * [Data Source Error](#data-source-error)
   * [Domain Error](#domain-error)
@@ -68,6 +68,7 @@ Broadly, the life-cycle of a request (Query request or CLI command) can be seen 
 | -------- | --- | ---------- | --- | -------- | --- | ----------- |
 
 
+// TODO: Request for feedback, an alternative is to let the lower level bubble up as is. Which is also an easier implementation. Right now there is no concrete use case for having separate error codes for the same error across layers (except attempting to save people from underlying component knowledge)
 **Note**: An error can happen in any parts of this stack and it bubbles up from that part to the surface area. For example, a unique constraint violation happens in the data source and the first programmatically parsable occurrence happens in the binary. However the same error is handled by Prisma SDK and eventually by the consumer of the SDK (say Photon). We have to document the same error in all these different specs as it bubbles up, thus defining a clear errors interface at each layer. This spec will eventually contain links to this distributed spec work.
 
 This document covers our error handling strategy and covers the following:
@@ -79,6 +80,8 @@ This document covers our error handling strategy and covers the following:
 As the Prisma SDK acts as the interface between binaries and SDK clients. A lot of error handling is managed in SDK layer.
 
 # Error Causes, Codes, and Handling Strategies
+
+// TODO: This is just an approach to try and list errors based on their classification (irrespective of the layers in Prisma stack). This is useful to show errors to people who are /// not aware of underlying components. An alternative can be to base prefixes on components.
 
 There can be various reasons for a request/operation to fail. This section broadly classifies potential error causes and handling strategies.
 
@@ -93,7 +96,9 @@ These are usually caused by faulty user input. For example,
 
 Handling strategy: Any user input must be validated and user should be notified about the validation error details.
 
-## Prisma Error (Bug is Prisma code)
+## Prisma Error
+
+Note: This is actually similar to an unknown error and wrapping this with an error code might not be possible from an implementation perspective.
 
 These are caused due to a bug in a Prisma component. For example,
 
@@ -127,6 +132,8 @@ These are caused when a data source lacks availability, For example,
 Handling strategy: Notify the user by relaying the error message from data source.
 
 ## Domain Error
+
+TODO: This needs better naming based on additional feedback. Maybe "Constraint Error" or "Data Error" is a better term.
 
 These are usually caused when a database constraint fails. For example,
 
