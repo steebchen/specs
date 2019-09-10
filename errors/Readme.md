@@ -12,35 +12,35 @@ In this document we make the distinction between [Unknown Errors](#unknown-error
 
 - [Motivation](#motivation)
 - [Error Causes, Codes, and Handling Strategies](#error-causes-codes-and-handling-strategies)
-  * [Validation Errors](#validation-errors)
-  * [Runtime Error](#runtime-error)
-  * [Data Error](#data-error)
+  - [Validation Errors](#validation-errors)
+  - [Runtime Error](#runtime-error)
+  - [Data Error](#data-error)
 - [Error Codes](#error-codes)
-  * [Prefix](#prefix)
+  - [Prefix](#prefix)
 - [Known Errors](#known-errors)
-  * [Prisma SDK](#prisma-sdk)
-    + [Unclassified SDK errors](#unclassified-sdk-errors)
-  * [Photon.js](#photonjs)
-  * [Prisma Studio](#prisma-studio)
-  * [Prisma CLI](#prisma-cli)
-    + [Init](#init)
-    + [Generate](#generate)
-    + [Dev](#dev)
-    + [Lift](#lift)
-    + [Introspect](#introspect)
+  - [Prisma SDK](#prisma-sdk)
+    - [Unclassified SDK errors](#unclassified-sdk-errors)
+  - [Photon.js](#photonjs)
+  - [Prisma Studio](#prisma-studio)
+  - [Prisma CLI](#prisma-cli)
+    - [Init](#init)
+    - [Generate](#generate)
+    - [Dev](#dev)
+    - [Lift](#lift)
+    - [Introspect](#introspect)
 - [Unknown Errors](#unknown-errors)
-  * [Unknown Error Template](#unknown-error-template)
-  * [Unknown Error Handling](#unknown-error-handling)
-    + [Photon.js](#photonjs-1)
-    + [Studio](#studio)
-    + [CLI](#cli)
+  - [Unknown Error Template](#unknown-error-template)
+  - [Unknown Error Handling](#unknown-error-handling)
+    - [Photon.js](#photonjs-1)
+    - [Studio](#studio)
+    - [CLI](#cli)
 - [Error Log Masking](#error-log-masking)
 - [Error Character Encoding](#error-character-encoding)
 - [Appendix](#appendix)
-  * [Common Database Errors](#common-database-errors)
-    + [MySQL](#mysql)
-    + [PostgreSQL](#postgresql)
-    + [SQLite](#sqlite)
+  - [Common Database Errors](#common-database-errors)
+    - [MySQL](#mysql)
+    - [PostgreSQL](#postgresql)
+    - [SQLite](#sqlite)
 - [Open Questions?](#open-questions)
 
 <!-- tocstop -->
@@ -164,9 +164,9 @@ SDK acts as the interface between the binaries and the tools. This section cover
 | Type mismatch - invalid Date                              | https://github.com/prisma/photonjs/issues/212 (TODO: Open question: shim)         | ???    | ???  |
 | Type mismatch - invalid JSON                              | https://github.com/prisma/photonjs/issues/60 (TODO: Open question: shim/coercion) | ???    | ???  |
 | Type mismatch - invalid custom type                       | https://github.com/prisma/specs/issues/119 (TODO: Open question: shim/coercion)   | ???    | ???  |
-| Incorrect migration generated (multiple things, rollback) | The generated migration is incorrect due to invalid query or existing tables      | ??     | ???  |
-| Destructive migration                                     | Migration possible with destructive changes i.e. data loss                        | ??     | ???  |
-| Introspection failure                                     | Introspection failed to produce a schema file                                     | ??     | ???  |
+| Incorrect migration generated (multiple things, rollback) | The generated migration is incorrect due to invalid query or existing tables      | ???    | ???  |
+| Destructive migration                                     | Migration possible with destructive changes i.e. data loss                        | ???    | ???  |
+| Introspection failure                                     | Introspection failed to produce a schema file                                     | ???    | ???  |
 
 ## Photon.js
 
