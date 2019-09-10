@@ -77,7 +77,7 @@ This document covers our error handling strategy and covers the following:
 2. Error log masking
 3. Error character encoding
 
-As the Prisma SDK acts as the interface between binaries and SDK clients. A lot of error handling is managed in SDK layer.
+As the Prisma SDK acts as the interface between binaries and SDK users. A lot of error handling is managed in SDK layer.
 
 # Error Causes, Codes, and Handling Strategies
 
