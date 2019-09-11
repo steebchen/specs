@@ -139,6 +139,53 @@ binaries on Debian, one with OpenSSL v1.0.x and one with OpenSSL v1.1.x. This co
 of binaries provides support for Debian 9 & 10, Debian-based distributions such as 
 various versions of Ubuntu, and Ubuntu-based distributions such as Linux Mint.
 
+### Binary builds
+
+- Mac (`darwin`)
+- Windows (`windows`)
+- Debian (`debian`)
+  - with OpenSSL 1.0
+  - with OpenSSL 1.1
+- CentOS (`rhel`, for RHEL distributions)
+  - with OpenSSL 1.0
+  - with OpenSSL 1.1
+
+### Operating systems and versions
+
+| Name                | Base           | Version                  | Status [?](#status-legend) | OpenSSL [?](#openssl)   | Comment |
+| :-----------------: | :------------: | :----------------------: | :------------------------: | :---------------------: | :-----: |
+| Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
+| Mac                 | `darwin`       | *                        | :heavy_check_mark:         | n/a                     |
+| Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+|                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+|                     |                | 10 (Buster)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| Ubuntu              | `debian`       | 14.04 (trusty)           | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+|                     |                | 16.04 (xenial)           | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+|                     |                | 18.04 (bionic)           | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+|                     |                | 19.04 (disco)            | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| Linux Mint          | `debian`       | 18                       | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| Alpine              | n/a            | *                        | :x:                        |                         |
+
+### Notes
+
+#### * Status legend
+
+- :heavy_check_mark: Works out of the box with no configuration at all.
+- :white_check_mark: You may need to install dependencies.
+- :x: Currently unsupported.
+
+#### * OpenSSL
+
+The OpenSSL column in the tables above describe what the default OpenSSL version is on 
+a given OS and version. It may not be installed per default, but it's always packaged
+through the native package manager (e.g. apt for Ubuntu), and in most cases you can
+simply install the package `openssl`.
+
+- ##### OS Note 1
+  You need dependencies on your machine to run the binary successfully. You can
+  use your OS package manager, for example apt-get or yum. Check the table above
+  which dependency you need exactly and then install it, e.g. `sudo apt-get install nodejs`.
+
 ## Pre-built Binary Targets
 
 |             **Build**              |      **Known Platforms**      |                                                    **Query Engine**                                                     | **Migration Engine**                                                                                                   | **Prisma Format**                                                                                                |
