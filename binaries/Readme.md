@@ -103,41 +103,21 @@ Binaries (query engine binary and migration engine binary) are at the core of Ph
 
 Prisma provides multiple binaries for various platforms and operating systems.
 
-## Why we need multiple binaries
+## Why?
 
-When a binary is built, it's usually done on a specific linux system in the cloud.
-This binary won't work on Windows, because it works completely differently. This is
-why we need to have at least different binaries for different operating system. However,
-it doesn't stop there. 
+We need different binaries because operating systems such as Windows and Linux work 
+fundamentally different. Some Linux distributions have the same issue. On top of that,
+different versions of Linux distributions have different versions of OpenSSL installed,
+which is why we need different binaries for those as well.
 
-Some Linux distribution also work very differently. You could run a Debian binary on ubuntu,
-but it will probably not work on CentOS. This complexity increases when shared libraries are
-used, for example OpenSSL.
+## How?
 
-## OpenSSL
+We build multiple binaries on common operating systems with different combinations
+of OpenSSL versions. This results in a few binaries which work on a large selection
+of operating systems, distributions and cloud platforms.
 
-OpenSSL is a crypto implementation used by many other libraries, such as curl or nodejs.
-Since the Prisma binary may connect to a https-based endpoint, OpenSSL is linked dynamically.
-This means you also need OpenSSL installed on your machine, but there's a high chance that
-you already have (because NodeJS ships with it).
-
-## How we used to do it
-
-The binary worked fine for developers since they were using MacBooks. Quickly, we realized
-that there are a lot of other operating systems and platforms on which the binary does not work.
-When a non-working platform or operating system popped up, we used to build a specific binary
-just for this one, for example a Netlify binary based on Ubuntu and a specific OpenSSL
-version. This resulted in a lot of binaries which couldn't be shared by similar platforms
-or operating systems.
- 
-## How it works now
-
-The new approach is to build images on a low-level operating system and different 
-OpenSSL versions. This results in a few binaries which work on a large selection
-of operating systems, distributions and cloud platforms. For example, we can build
-binaries on Debian, one with OpenSSL v1.0.x and one with OpenSSL v1.1.x. This combination 
-of binaries provides support for Debian 9 & 10, Debian-based distributions such as 
-various versions of Ubuntu, and Ubuntu-based distributions such as Linux Mint.
+Initially, we built specific binaries for given platforms (e.g. Netlify), which resulted in many 
+binaries which couldn't be shared with similar platforms and it was hard to maintain. 
 
 ### Binary builds
 
@@ -154,7 +134,6 @@ various versions of Ubuntu, and Ubuntu-based distributions such as Linux Mint.
 
 | Name                | Base           | Version                  | Status [?](#status-legend) | OpenSSL [?](#openssl)   | Comment |
 | :-----------------: | :------------: | :----------------------: | :------------------------: | :---------------------: | :-----: |
-| Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
 | Mac                 | `darwin`       | *                        | :heavy_check_mark:         | n/a                     |
 | Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 |                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
@@ -165,16 +144,17 @@ various versions of Ubuntu, and Ubuntu-based distributions such as Linux Mint.
 |                     |                | 19.04 (disco)            | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 | Linux Mint          | `debian`       | 18                       | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 | Alpine              | n/a            | *                        | :x:                        |                         |
+| Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
 
 ### Notes
 
-#### * Status legend
+#### Status legend
 
 - :heavy_check_mark: Works out of the box with no configuration at all.
 - :white_check_mark: You may need to install dependencies.
 - :x: Currently unsupported.
 
-#### * OpenSSL
+#### OpenSSL
 
 The OpenSSL column in the tables above describe what the default OpenSSL version is on 
 a given OS and version. It may not be installed per default, but it's always packaged
