@@ -99,18 +99,18 @@ Binaries (query engine binary and migration engine binary) are at the core of Ph
 
 [See generators (Photon, Nexus etc) example scenarios](#example-scenarios)
 
-# Binary Files
+## Binary Files
 
 Prisma provides multiple binaries for various platforms and operating systems.
 
-## Why?
+### Why?
 
 We need different binaries because operating systems such as Windows and Linux work 
 fundamentally different. Some Linux distributions have the same issue. On top of that,
 different versions of Linux distributions have different versions of OpenSSL installed,
 which is why we need different binaries for those as well.
 
-## How?
+### How?
 
 We build multiple binaries on common operating systems with different combinations
 of OpenSSL versions. This results in a few binaries which work on a large selection
@@ -121,12 +121,12 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 
 ### Binary builds
 
-| Name                | Codename       | OpenSSL variations |
-| :-----------------: | :------------: | :----------------: |
-| Mac                 | `darwin`       | n/a                |
-| Windows             | `windows`      | n/a                |
-| Debian              | `debian`       | 1.0.x, 1.1.y       |
-| CentOS              | `rhel`         | 1.0.x, 1.1.y       |
+| Name                | Codename       | OpenSSL variations | Downloads |
+| :-----------------: | :------------: | :----------------: | :-------: |
+| Mac                 | `darwin`       | n/a                | (tbd)     |
+| Windows             | `windows`      | n/a                | (tbd)     |
+| Debian              | `debian`       | 1.0.x, 1.1.y       | (tbd)     |
+| CentOS              | `rhel`         | 1.0.x, 1.1.y       | (tbd)     |
 
 ### Operating systems and versions
 
