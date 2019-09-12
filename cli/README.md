@@ -25,6 +25,8 @@ Prisma CLI offers essential functionality to Prisma users:
 
 `prisma2 init`
 
+???
+
 ### Create datamodel based on existing database 
 
 `prisma2 introspect`
@@ -35,6 +37,17 @@ Prisma CLI offers essential functionality to Prisma users:
 
 `prisma2 dev`
 
+???
+
+#### Interactive
+
+???
+
+#### Non-Interactive
+
+???
+
+Also:
 => Studio
 
 ### Migrate datamodel 
@@ -55,6 +68,17 @@ Prisma CLI offers essential functionality to Prisma users:
 
 => ???
 
+### Convert Prisma 1.x datamodel
+
+`prisma2 convert`
+
+???
+
+### Configure telemetry settings
+
+`prisma2 telemetry`
+
+???
 
 
 ## Technical Design Spec
