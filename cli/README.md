@@ -78,12 +78,6 @@ Also:
 
 ???
 
-### Configure telemetry settings
-
-`prisma2 telemetry`
-
-???
-
 
 ## Technical Design Spec
 
