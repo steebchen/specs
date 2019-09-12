@@ -3,8 +3,17 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [View Online](#view-online)
-- [Usage](#usage)
+
+- [Functional Spec](#functional-spec)
+  - [Setup Prisma](#setup-prisma)
+  - [Create datamodel based on existing database](#create-datamodel-based-on-existing-database)
+  - [Iterate on datamodel (watch mode)](#iterate-on-datamodel-watch-mode)
+  - [Migrate datamodel](#migrate-datamodel)
+  - [Generate Photon client](#generate-photon-client)
+  - [Fill data with test data](#fill-data-with-test-data)
+- [Technical Design Spec](#technical-design-spec)
+  - [View Online](#view-online)
+  - [Usage](#usage)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
