@@ -121,49 +121,49 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 
 ### Binary builds
 
-| Name                | Codename       | OpenSSL variations | Downloads |
-| :-----------------: | :------------: | :----------------: | :-------: |
-| Mac                 | `darwin`       | n/a                | (tbd)     |
-| Windows             | `windows`      | n/a                | (tbd)     |
-| Debian              | `debian`       | 1.0.x, 1.1.y       | (tbd)     |
-| CentOS              | `rhel`         | 1.0.x, 1.1.y       | (tbd)     |
+| Build          | OS                  | OpenSSL variations | Downloads |
+| :------------- | :------------------ | :----------------: | :-------- |
+| `darwin`       | Mac                 | n/a                | (tbd)     |
+| `windows`      | Windows             | n/a                | (tbd)     |
+| `debian`       | Debian              | 1.0.x, 1.1.y       | (tbd)     |
+| `rhel`         | CentOS              | 1.0.x, 1.1.y       | (tbd)     |
 
 ### Operating systems and versions
 
-| Name                | Base           | Version                  | Status [?](#status-legend) | OpenSSL [[1]](#openssl) | Comment |
-| :-----------------: | :------------: | :----------------------: | :------------------------: | :---------------------: | :-----: |
-| Mac                 | `darwin`       | *                        | :heavy_check_mark:         | n/a                     |
-| Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.0.0`
-|                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
-|                     |                | 10 (Buster)              | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
-| Ubuntu              | `debian`       | 14.04 (trusty)           | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
-|                     |                | 16.04 (xenial)           | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
-|                     |                | 18.04 (bionic)           | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
-|                     |                | 19.04 (disco)            | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
-| CentOS              | `rhel`         | 6                        | :heavy_check_mark:         | 1.0.x                   |
-|                     |                | 7                        | :heavy_check_mark:         | 1.0.x                   |
-| Fedora              | `rhel`         | 28                       | :heavy_check_mark:         | 1.1.x                   |
-|                     |                | 29                       | :heavy_check_mark:         | 1.1.x                   |
-|                     |                | 30                       | :heavy_check_mark:         | 1.1.x                   |
-| Linux Mint          | `debian`       | 18                       | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
-|                     |                | 19                       | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
-| Alpine              | n/a            | *                        | :x:                        |                         |
-| Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
+| OS                  | Version                  | Build          | Status [?](#status-legend) | OpenSSL [[1]](#openssl) | Comment |
+| :------------------ | :----------------------- | :------------- | :------------------------: | :---------------------: | :------ |
+| Mac                 | *                        | `darwin`       | :heavy_check_mark:         | n/a                     |
+| Debian              | 8 (Jessie)               | `debian`       | (:heavy_check_mark:)       | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.0.0`
+|                     | 9 (Stretch)              |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
+|                     | 10 (Buster)              |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
+| Ubuntu              | 14.04 (trusty)           | `debian`       | (:heavy_check_mark:)       | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     | 16.04 (xenial)           |                | (:heavy_check_mark:)       | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     | 18.04 (bionic)           |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     | 19.04 (disco)            |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+| CentOS              | 6                        | `rhel`         | :heavy_check_mark:         | 1.0.x                   |
+|                     | 7                        |                | :heavy_check_mark:         | 1.0.x                   |
+| Fedora              | 28                       | `rhel`         | :heavy_check_mark:         | 1.1.x                   |
+|                     | 29                       |                | :heavy_check_mark:         | 1.1.x                   |
+|                     | 30                       |                | :heavy_check_mark:         | 1.1.x                   |
+| Linux Mint          | 18                       | `debian`       | (:heavy_check_mark:)       | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     | 19                       |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+| Alpine              | *                        | n/a            | :x:                        | ?                       | see [prisma/photonjs#173](https://github.com/prisma/photonjs/issues/173)
+| Windows             | *                        | `windows`      | :heavy_check_mark:         | n/a                     |
 
 This is also continuously tracked on [our build system](https://buildkite.com/prisma/binary-testing).
 
 ### Cloud environments
 
-| Name                | Base           | Base OS                  | Status [?](#status-legend) | Comment |
-| :-----------------: | :------------: | :---------------------:  | :------------------------: | :-----: |
+|                     | Build          | Base OS                  | Status [?](#status-legend) | Comment |
+| :------------------ | :------------- | :----------------------  | :------------------------: | :------ |
 | Netlify             | `debian`       | Ubuntu 16.04             | :heavy_check_mark:         | Use the latest build image 
-| Zeit                | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         |
-| Lambda              | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         | Use the NodeJS 8 image or higher
+| Zeit                | `rhel`         | Amazon Linux (CentOS)    | :heavy_check_mark:         |
+| Lambda              | `rhel`         | Amazon Linux (CentOS)    | :heavy_check_mark:         | Use the NodeJS 8 image or higher
 
 ### Status legend
 
 - :heavy_check_mark: Works out of the box with no configuration at all.
-- :white_check_mark: You may need to install dependencies.
+- (:heavy_check_mark:) You may need to install dependencies.
 - :x: Currently unsupported.
 
 ### Footnotes
