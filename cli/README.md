@@ -71,7 +71,7 @@ Also:
 
 => ???
 
-### Convert Prisma 1.x datamodel
+### Convert  Prisma 1.x service configuration to Prisma 2 schema file.
 
 `prisma2 convert`
 
