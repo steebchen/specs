@@ -152,9 +152,9 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 
 This is also continuously tracked on [our build system](https://buildkite.com/prisma/binary-testing).
 
-### Cloud platforms
+### Cloud environments
 
-| Name                | Base           | Base Version             | Status [?](#status-legend) | Comment |
+| Name                | Base           | Base OS                  | Status [?](#status-legend) | Comment |
 | :-----------------: | :------------: | :---------------------:  | :------------------------: | :-----: |
 | Netlify             | `debian`       | Ubuntu 16.04             | :heavy_check_mark:         | Use the latest build image 
 | Zeit                | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         |
