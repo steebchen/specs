@@ -121,14 +121,12 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 
 ### Binary builds
 
-- Mac (`darwin`)
-- Windows (`windows`)
-- Debian (`debian`)
-  - with OpenSSL 1.0
-  - with OpenSSL 1.1
-- CentOS (`rhel`)
-  - with OpenSSL 1.0
-  - with OpenSSL 1.1
+| Name                | Codename       | OpenSSL variations |
+| :-----------------: | :------------: | :----------------: |
+| Mac                 | `darwin`       | n/a                |
+| Windows             | `windows`      | n/a                |
+| Debian              | `debian`       | 1.0.x, 1.1.y       |
+| CentOS              | `rhel`         | 1.0.x, 1.1.y       |
 
 ### Operating systems and versions
 
@@ -151,6 +149,8 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 |                     |                | 19                       | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 | Alpine              | n/a            | *                        | :x:                        |                         |
 | Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
+
+This is also continuously tracked on [our build system](https://buildkite.com/prisma/binary-testing).
 
 ### Cloud platforms
 
