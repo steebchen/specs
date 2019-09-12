@@ -126,7 +126,7 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 - Debian (`debian`)
   - with OpenSSL 1.0
   - with OpenSSL 1.1
-- CentOS (`rhel`, for RHEL distributions)
+- CentOS (`rhel`)
   - with OpenSSL 1.0
   - with OpenSSL 1.1
 
@@ -135,16 +135,30 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 | Name                | Base           | Version                  | Status [?](#status-legend) | OpenSSL [?](#openssl)   | Comment |
 | :-----------------: | :------------: | :----------------------: | :------------------------: | :---------------------: | :-----: |
 | Mac                 | `darwin`       | *                        | :heavy_check_mark:         | n/a                     |
-| Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
-|                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
-|                     |                | 10 (Buster)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `libssl1.0.0`
+|                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `libssl1.1`
+|                     |                | 10 (Buster)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `libssl1.1`
 | Ubuntu              | `debian`       | 14.04 (trusty)           | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 |                     |                | 16.04 (xenial)           | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 |                     |                | 18.04 (bionic)           | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 |                     |                | 19.04 (disco)            | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| CentOS              | `rhel`         | 6                        | :heavy_check_mark:         | 1.0.x                   |
+|                     |                | 7                        | :heavy_check_mark:         | 1.0.x                   |
+| Fedora              | `rhel`         | 28                       | :heavy_check_mark:         | 1.1.x                   |
+|                     |                | 29                       | :heavy_check_mark:         | 1.1.x                   |
+|                     |                | 30                       | :heavy_check_mark:         | 1.1.x                   |
 | Linux Mint          | `debian`       | 18                       | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+|                     |                | 19                       | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
 | Alpine              | n/a            | *                        | :x:                        |                         |
 | Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
+
+### Cloud platforms
+
+| Name                | Base           | Base Version             | Status [?](#status-legend) | Comment |
+| :-----------------: | :------------: | :---------------------:  | :------------------------: | :-----: |
+| Netlify             | `debian`       | Ubuntu 16.04             | :heavy_check_mark:         | Use the latest build image 
+| Zeit                | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         |
+| Lambda              | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         | Use the NodeJS 8 image or higher
 
 ### Notes
 
