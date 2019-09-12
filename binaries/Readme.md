@@ -169,15 +169,17 @@ This is also continuously tracked on [our build system](https://buildkite.com/pr
 ### Footnotes
 
 1. #### OpenSSL
-  The OpenSSL column in the tables above describe what the default OpenSSL version is on 
-  a given OS and version. It may not be installed per default, but it's always packaged
-  through the native package manager (e.g. apt for Ubuntu), and in most cases you can
-  simply install the package `openssl`.
+
+    The OpenSSL column in the tables above describe what the default OpenSSL version is on 
+    a given OS and version. It may not be installed per default, but it's always packaged
+    through the native package manager (e.g. apt for Ubuntu), and in most cases you can
+    simply install the package `openssl`.
 
 2. #### Dependencies
-  You need dependencies on your machine to run the binary successfully. You can
-  use your OS package manager, for example apt-get or yum. Check the table above
-  which dependency you need exactly and then install it, e.g. `sudo apt-get install nodejs`.
+
+    You need dependencies on your machine to run the binary successfully. You can
+    use your OS package manager, for example apt-get or yum. Check the table above
+    which dependency you need exactly and then install it, e.g. `sudo apt-get install nodejs`.
 
 ## Pre-built Binary Targets
 
