@@ -130,23 +130,23 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 
 ### Operating systems and versions
 
-| Name                | Base           | Version                  | Status [?](#status-legend) | OpenSSL [?](#openssl)   | Comment |
+| Name                | Base           | Version                  | Status [?](#status-legend) | OpenSSL [[1]](#openssl) | Comment |
 | :-----------------: | :------------: | :----------------------: | :------------------------: | :---------------------: | :-----: |
 | Mac                 | `darwin`       | *                        | :heavy_check_mark:         | n/a                     |
-| Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `libssl1.0.0`
-|                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `libssl1.1`
-|                     |                | 10 (Buster)              | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `libssl1.1`
-| Ubuntu              | `debian`       | 14.04 (trusty)           | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
-|                     |                | 16.04 (xenial)           | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
-|                     |                | 18.04 (bionic)           | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
-|                     |                | 19.04 (disco)            | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| Debian              | `debian`       | 8 (Jessie)               | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.0.0`
+|                     |                | 9 (Stretch)              | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
+|                     |                | 10 (Buster)              | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
+| Ubuntu              | `debian`       | 14.04 (trusty)           | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     |                | 16.04 (xenial)           | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     |                | 18.04 (bionic)           | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     |                | 19.04 (disco)            | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
 | CentOS              | `rhel`         | 6                        | :heavy_check_mark:         | 1.0.x                   |
 |                     |                | 7                        | :heavy_check_mark:         | 1.0.x                   |
 | Fedora              | `rhel`         | 28                       | :heavy_check_mark:         | 1.1.x                   |
 |                     |                | 29                       | :heavy_check_mark:         | 1.1.x                   |
 |                     |                | 30                       | :heavy_check_mark:         | 1.1.x                   |
-| Linux Mint          | `debian`       | 18                       | :white_check_mark:         | 1.0.x                   | [1](#os-note-1) install `nodejs` or `openssl`
-|                     |                | 19                       | :white_check_mark:         | 1.1.x                   | [1](#os-note-1) install `nodejs` or `openssl`
+| Linux Mint          | `debian`       | 18                       | :white_check_mark:         | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+|                     |                | 19                       | :white_check_mark:         | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
 | Alpine              | n/a            | *                        | :x:                        |                         |
 | Windows             | `windows`      | *                        | :heavy_check_mark:         | n/a                     |
 
@@ -160,22 +160,21 @@ This is also continuously tracked on [our build system](https://buildkite.com/pr
 | Zeit                | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         |
 | Lambda              | `rhel`         | Fedora (Amazon Linux)    | :heavy_check_mark:         | Use the NodeJS 8 image or higher
 
-### Notes
-
-#### Status legend
+### Status legend
 
 - :heavy_check_mark: Works out of the box with no configuration at all.
 - :white_check_mark: You may need to install dependencies.
 - :x: Currently unsupported.
 
-#### OpenSSL
+### Footnotes
 
-The OpenSSL column in the tables above describe what the default OpenSSL version is on 
-a given OS and version. It may not be installed per default, but it's always packaged
-through the native package manager (e.g. apt for Ubuntu), and in most cases you can
-simply install the package `openssl`.
+1. #### OpenSSL
+  The OpenSSL column in the tables above describe what the default OpenSSL version is on 
+  a given OS and version. It may not be installed per default, but it's always packaged
+  through the native package manager (e.g. apt for Ubuntu), and in most cases you can
+  simply install the package `openssl`.
 
-- ##### OS Note 1
+2. #### Dependencies
   You need dependencies on your machine to run the binary successfully. You can
   use your OS package manager, for example apt-get or yum. Check the table above
   which dependency you need exactly and then install it, e.g. `sudo apt-get install nodejs`.
