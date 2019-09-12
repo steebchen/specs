@@ -14,7 +14,6 @@
   - [Generate Photon client](#generate-photon-client)
   - [Fill data with test data](#fill-data-with-test-data)
   - [Convert Prisma 1.x datamodel](#convert-prisma-1x-datamodel)
-  - [Configure telemetry settings](#configure-telemetry-settings)
 - [Technical Design Spec](#technical-design-spec)
   - [View Online](#view-online)
   - [Usage](#usage)
