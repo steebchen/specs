@@ -13,7 +13,7 @@
   - [Migrate datamodel](#migrate-datamodel)
   - [Generate Photon client](#generate-photon-client)
   - [Fill data with test data](#fill-data-with-test-data)
-  - [Convert Prisma 1.x datamodel](#convert-prisma-1x-datamodel)
+  - [Convert  Prisma 1.x service configuration to Prisma 2 schema file.](#convert--prisma-1x-service-configuration-to-prisma-2-schema-file)
 - [Technical Design Spec](#technical-design-spec)
   - [View Online](#view-online)
   - [Usage](#usage)
