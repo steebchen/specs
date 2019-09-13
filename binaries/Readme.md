@@ -151,6 +151,7 @@ This table shows which common operating systems are compatible with our pre-buil
 |                     | 30                       |                | :heavy_check_mark:         | 1.1.x                   |
 | Linux Mint          | 18                       | `debian`       | (:heavy_check_mark:)       | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
 |                     | 19                       |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
+| Arch Linux          | 2019.09.01               | `debian`       | :heavy_check_mark:         | 1.1.x                   |
 | Alpine              | *                        | n/a            | :x:                        | ?                       | see [prisma/photonjs#173](https://github.com/prisma/photonjs/issues/173)
 | Windows             | *                        | `windows`      | :heavy_check_mark:         | n/a                     |
 
@@ -161,6 +162,7 @@ This is also continuously tracked on [our build system](https://buildkite.com/pr
 |                     | Build          | Base OS                  | Status [?](#status-legend) | Comment |
 | :------------------ | :------------- | :----------------------  | :------------------------: | :------ |
 | Netlify             | `debian`       | Ubuntu 16.04             | :heavy_check_mark:         | Use the latest build image 
+| Codesandbox         | `debian`       | Debian 8 Jessie          | :heavy_check_mark:         |
 | Zeit                | `rhel`         | Amazon Linux (CentOS)    | :heavy_check_mark:         |
 | Lambda              | `rhel`         | Amazon Linux (CentOS)    | :heavy_check_mark:         | Use the NodeJS 8 image or higher
 
