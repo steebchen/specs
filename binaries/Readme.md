@@ -121,6 +121,8 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 
 ### Binary builds
 
+The following table lists the pre-built binaries provided by Prisma.
+
 | Build          | OS                  | OpenSSL variations | Downloads |
 | :------------- | :------------------ | :----------------: | :-------- |
 | `darwin`       | Mac                 | n/a                | (tbd)     |
@@ -129,6 +131,8 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 | `rhel`         | CentOS              | 1.0.x, 1.1.y       | (tbd)     |
 
 ### Operating systems and versions
+
+This table shows which common operating systems are compatible with our pre-built binaries.
 
 | OS                  | Version                  | Build          | Status [?](#status-legend) | OpenSSL [[1]](#openssl) | Comment |
 | :------------------ | :----------------------- | :------------- | :------------------------: | :---------------------: | :------ |
