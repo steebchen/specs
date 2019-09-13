@@ -122,6 +122,7 @@ binaries which couldn't be shared with similar platforms and it was hard to main
 ### Binary builds
 
 The following table lists the pre-built binaries provided by Prisma.
+These include Windows and Mac, and multiple variations for Linux distributions
 
 | Build          | OS                  | OpenSSL variations | Downloads |
 | :------------- | :------------------ | :----------------: | :-------- |
@@ -130,13 +131,12 @@ The following table lists the pre-built binaries provided by Prisma.
 | `debian`       | Debian              | 1.0.x, 1.1.y       | (tbd)     |
 | `rhel`         | CentOS              | 1.0.x, 1.1.y       | (tbd)     |
 
-### Operating systems and versions
+### Linux Distributions and versions
 
-This table shows which common operating systems are compatible with our pre-built binaries.
+This table shows which linux distributions are compatible with our pre-built binaries.
 
 | OS                  | Version                  | Build          | Status [?](#status-legend) | OpenSSL [[1]](#openssl) | Comment |
 | :------------------ | :----------------------- | :------------- | :------------------------: | :---------------------: | :------ |
-| Mac                 | *                        | `darwin`       | :heavy_check_mark:         | n/a                     |
 | Debian              | 8 (Jessie)               | `debian`       | (:heavy_check_mark:)       | 1.0.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.0.0`
 |                     | 9 (Stretch)              |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
 |                     | 10 (Buster)              |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `libssl1.1`
@@ -153,7 +153,6 @@ This table shows which common operating systems are compatible with our pre-buil
 |                     | 19                       |                | (:heavy_check_mark:)       | 1.1.x                   | [[2]](#dependencies) install `nodejs` or `openssl`
 | Arch Linux          | 2019.09.01               | `debian`       | :heavy_check_mark:         | 1.1.x                   |
 | Alpine              | *                        | n/a            | :x:                        | ?                       | see [prisma/photonjs#173](https://github.com/prisma/photonjs/issues/173)
-| Windows             | *                        | `windows`      | :heavy_check_mark:         | n/a                     |
 
 This is also continuously tracked on [our build system](https://buildkite.com/prisma/binary-testing).
 
