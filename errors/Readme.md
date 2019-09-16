@@ -7,11 +7,9 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Motivation](#motivation)
 - [Error Causes and Handling Strategies](#error-causes-and-handling-strategies)
-  - [Validation Errors](#validation-errors)
-  - [Data Error](#data-error)
-  - [Runtime Error](#runtime-error)
 - [Error Codes](#error-codes)
 - [Known Errors](#known-errors)
   - [Prisma SDK](#prisma-sdk)
@@ -29,6 +27,7 @@
     - [Dev](#dev)
     - [Lift](#lift)
     - [Introspect](#introspect)
+  - [Programmatic access](#programmatic-access)
 - [Unknown Errors](#unknown-errors)
   - [Unknown Error Template](#unknown-error-template)
   - [Unknown Error Handling](#unknown-error-handling)
@@ -36,7 +35,6 @@
     - [Studio](#studio)
     - [CLI](#cli)
 - [Error Log Masking](#error-log-masking)
-- [Error Character Encoding](#error-character-encoding)
 - [Appendix](#appendix)
   - [Common Database Errors](#common-database-errors)
     - [MySQL](#mysql)
@@ -49,8 +47,6 @@
 # Motivation
 
 ![Prisma 2 architecture diagram with errors overlay](./errors-spec.png)
-
-// TODO: Move image to figma
 
 | Component   | Description                                                                                        |
 | ----------- | -------------------------------------------------------------------------------------------------- |
@@ -71,8 +67,9 @@ Broadly, the life-cycle of a request (Query request or CLI command) can be seen 
 
 There can be various reasons for a request/operation to fail. This section broadly classifies potential error causes and handling strategies.
 
-## Validation Errors
-
+<details>
+<summary>Validation Errors</summary>
+<p>
 These are usually caused by faulty user input. For example,
 
 - Incorrect database credentials
@@ -81,9 +78,12 @@ These are usually caused by faulty user input. For example,
 
 Handling strategy: Any user input must be validated and user should be notified about the validation error details.
 
-## Data Error
+</p>
+</details>
 
-These are usually caused when a database constraint fails. For example,
+<details>
+<summary>Data Error</summary>
+<p>These are usually caused when a database constraint fails. For example,
 
 - Record not found
 - Unique constraint violation
@@ -92,10 +92,12 @@ These are usually caused when a database constraint fails. For example,
 
 Handling strategy: Domain errors would usually originate from the data source and the underlying message should be relayed to the user with some context.
 
-## Runtime Error
+</p>
+</details>
 
-// TODO: Seeking feedback on this terminology. Something that encapsulates Database errors, OS errors.
-
+<details>
+<summary>Runtime Error</summary>
+<p>
 These are caused due to an error in Prisma runtime. For example,
 
 - The available binary is not compiled for this platform
@@ -106,6 +108,9 @@ These are caused due to an error in Prisma runtime. For example,
 Handling strategy: Notify the user by relaying the message from OS/Database and suggesting them to retry. They might need to free up resources or do something at the OS level.
 
 In certain cases, like when a port collision, Prisma SDK can try to retry gracefully as well with a different port.
+
+</p>
+</details>
 
 # Error Codes
 
@@ -126,85 +131,71 @@ Error codes make identification/classification of error easier. Moreover, we can
 
 SDK acts as the interface between the binaries and the tools. This section covers errors from SDK, binaries and the network between SDK ⇆ Binary and Binary ⇆ Data source.
 
-// TODO: Update description
-
 ### Common
 
-| Title                                | Description                                             | Code  |
-| ------------------------------------ | ------------------------------------------------------- | ----- |
-| Incorrect database credentials       | User inputted wrong database credentials                | P1000 |
-| Database not reachable               | The URL is not reachable (bad URL or network too)       | P1001 |
-| Database errors - corruption         | The database is reachable but corrupted                 | P1002 |
-| Database timeout                     | Credentials are correct but request timed out           | P1003 |
-| Database does not exist              | A database with the provided name does not exist        | P1004 |
-| Binary for the wrong platform        | The downloaded binary is not compiled for this platform | P1005 |
-| Unable to bind binary to a free port | Port already in use                                     | P1006 |
+| Title                            | Message                                                          | Code  |
+| -------------------------------- | ---------------------------------------------------------------- | ----- |
+| Incorrect database credentials   | Please check the database credentials again                      | P1000 |
+| Database not reachable           | The provided database URL is not reachable                       | P1001 |
+| Database timeout                 | Credentials are correct but request timed out                    | P1002 |
+| Database does not exist          | A database with the provided name does not exist                 | P1003 |
+| Incompatible binary              | The downloaded/provided binary is not compiled for this platform | P1004 |
+| Unable to start the query engine | The binary process crashed or failed to spawn                    | P1005 |
 
 ### Query Engine
 
-| Title                               | Description                                                                       | Code  |
-| ----------------------------------- | --------------------------------------------------------------------------------- | ----- |
-| Value too long                      | The value is too long for the column                                              | P2000 |
-| Record not found error              | The record specified by where condition does not exist                            | P2001 |
-| Unique key violation error          | `UniqueConstraintViolation: Unique constraint failed: ${field_name}`              | P2002 |
-| Foreign key violation error         | Database level constraint violation                                               | P2003 |
-| Custom constraint violation         | Database level constraint violation                                               | P2004 |
-| Stored value is invalid             | Example: https://github.com/prisma/photonjs/issues/214                            | P2005 |
-| Type mismatch - invalid ID          | Invalid UUID in String (TODO: Open question: shim)                                | P2006 |
-| Type mismatch - invalid Date        | https://github.com/prisma/photonjs/issues/212 (TODO: Open question: shim)         | P2007 |
-| Type mismatch - invalid JSON        | https://github.com/prisma/photonjs/issues/60 (TODO: Open question: shim/coercion) | P2008 |
-| Type mismatch - invalid custom type | https://github.com/prisma/specs/issues/119 (TODO: Open question: shim/coercion)   | P2009 |
+| Title                   | Message                                                                                        | Code  |
+| ----------------------- | ---------------------------------------------------------------------------------------------- | ----- |
+| Input value too long    | The value for the field `${field_name}` on the is too long for the field's type                | P2000 |
+| Record not found        | The record searched for in the where condition does not exist                                  | P2001 |
+| Unique key violation    | Unique constraint failed on the field: `${field_name}`                                         | P2002 |
+| Foreign key violation   | Foreign key constraint failed on the field: `${field_name}`                                    | P2003 |
+| Constraint violation    | A constraint failed on the database: `${error}`                                                | P2004 |
+| Stored value is invalid | The value stored in the database for the field `${field_name}` is invalid for the field's type | P2005 |
+
+TODO: Open questions, classify these issues:
+
+| Title                                 | Issue                                              | Open Questions                                              |
+| ------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| Type mismatch: invalid (ID/Date/Json) | The provided value for (ID/Date/Json) is not valid | What known types do we support besides Prisma scalar types? |
+| Type mismatch: invalid custom type    | https://github.com/prisma/specs/issues/119         | Do we validate custom types or just pass them through?      |
 
 ### Migration Engine
 
-| Title                                                     | Description                                                                  | Code  |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------- | ----- |
-| Database creation failed                                  | `DatabaseCreationError: Database creation error: ${error}`                   | P3000 |
-| Destructive migration                                     | Migration possible with destructive changes i.e. data loss                   | P3001 |
-| Incorrect migration generated (multiple things, rollback) | The generated migration is incorrect due to invalid query or existing tables | P3002 |
+| Title                          | Message                                                            | Code  |
+| ------------------------------ | ------------------------------------------------------------------ | ----- |
+| Database creation failed       | Failed to create database: `${error}`                              | P3000 |
+| Destructive migration detected | Migration possible with destructive changes and possible data loss | P3001 |
+| Migration rollback             | The attempted migration was rolled back: `${error}`                | P3002 |
 
 ### Schema Parser
 
-| Title                                             | Description                                            | Code  |
-| ------------------------------------------------- | ------------------------------------------------------ | ----- |
-| Schema parsing error (multiple things, syntax)    | User input schema is invalid                           | P4000 |
-| Schema semantic error (multiple things, semantic) | Parses but incorrect "meaning" like relation ambiguity | P4001 |
-| Schema string input validation                    | Database URL in Prisma schema fails to parse           | P4002 |
+| Title                                 | Message                                                                                  | Code  |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- | ----- |
+| Schema parsing failed                 | Failed to parse schema file: `${error}`                                                  | P4000 |
+| Schema relational ambiguity           | There is a relational ambiguity in the schema file between the models `${A}` and `${B}`. | P4001 |
+| Schema string input validation errors | Database URL provided in the schema failed to parse                                      | P4002 |
+
+TODO: Are there more known semantic errors like Relation ambiguity
 
 ### Introspection
 
-| Title                 | Description                                   | Code  |
-| --------------------- | --------------------------------------------- | ----- |
-| Introspection failure | Introspection failed to produce a schema file | P5000 |
+| Title                | Message                                                             | Code  |
+| -------------------- | ------------------------------------------------------------------- | ----- |
+| Introspection failed | Introspection operation failed to produce a schema file: `${error}` | P5000 |
 
 ### Unclassified SDK errors
 
 ## Photon.js
 
-| Title                         | Description                                           | Code |
+| Title                         | Message                                               | Code |
 | ----------------------------- | ----------------------------------------------------- | ---- |
 | Invalid Photon call           | Querying non-existent fields or wrong arguments, etc. | ???  |
 | Query engine connection error | Query engine was started but the process died         | ???  |
 
-Photon relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P2000`, `P2001` , `P2002`, `P2003`, `P2004`, `P2005`, `P2006`, `P2007`, `P2008`, `P2009`
+Photon relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P2000`, `P2001` , `P2002`, `P2003`, `P2004`, `P2005`.
 
-Since Photon results are consumed in user-land, it should have a parsable error structure:
-
-// TODO: Come back to this section and expand it more
-Error object:
-
-```json
-{
-  code: "<ERROR_CODE>"
-  message: "<ERROR_MESSAGE>"
-}
-```
-
-Serialization of the error message (default `toString`) will have the following template:
-
-```
-${ERROR_CODE}: ${ERROR_MESSAGE}
-```
+TODO: See open items from Prisma SDK → Query Engine section.
 
 ## Prisma Studio
 
@@ -213,16 +204,13 @@ Note: Studio has two workflows:
 Electron app: Credentials from the UI → Introspection → Prisma schema → Valid Prisma project
 Web app: `prisma2 dev` → Provides Prisma schema i.e a Valid Prisma project
 
-Since studio uses Photon for query building. It relays the same error messages as Photon.
-git
-
-// TODO: Introspection failure, database creation failure
+Since studio uses Photon for query building. It relays the same error messages as Photon. Additionally, it relays the following errors from the SDK: `P3000`, `P5000`
 
 ## Prisma CLI
 
 ### Init
 
-| Title                                  | Description                             | Code |
+| Title                                  | Message                                 | Code |
 | -------------------------------------- | --------------------------------------- | ---- |
 | Directory already contains schema file | Directory is an existing Prisma project | ???  |
 | Starter kit                            | Directory is not empty                  | ???  |
@@ -237,17 +225,40 @@ Generate command relays the following errors from the SDK: `P4000`, `P4001`, `P4
 
 ### Dev
 
-Init command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P3000`, `P3001`, `P4000`, `P4001`, `P4002`
+Init command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P3000`, `P3001`, `P4000`, `P4001`, `P4002`
 
 ### Lift
 
-// TODO: Programmatic lift access
-
-Init command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P3000`, `P3001`, `P4000`, `P4001`, `P4002`
+Init command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P3000`, `P3001`, `P4000`, `P4001`, `P4002`
 
 ### Introspect
 
-Init command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P5000`
+Init command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P5000`
+
+## Programmatic access
+
+Many of these errors from the previous section are expected to be consumed programmatically.
+
+`Photon.js`: In user's code base
+`Prisma SDK`: Lift etc, in the tools that use Prisma SDK
+
+Therefore, they should be consumable programmatically and have an error structure:
+
+TODO: Come back to this section and expand it more
+Error object:
+
+```json
+{
+  code: "<ERROR_CODE>"
+  message: "<ERROR_MESSAGE>"
+}
+```
+
+Serialization of the error message (default `toString`) will have the following template:
+
+```
+${ERROR_CODE}: ${ERROR_MESSAGE}
+```
 
 # Unknown Errors
 
@@ -304,7 +315,7 @@ An internal error occurred during invocation of **photon.users.create()** in **/
 
 <details><Summary>Error report</Summary>
 
-File name: `prisma-error-TIMESTAMP.md` where `TIMESTAMP` is a placeholder for the current timestamp.
+File name: `prisma-error.md` is created inside the project directory on first error and is appended to on subsequent errors.
 
 ```
 # Error report (Photon JS | July 23, 2019 | 14:42:23 h)
@@ -362,7 +373,7 @@ Thanks for helping us making Prisma 2 more stable! 🙏
 
 <details><Summary>Error report</Summary>
 
-File name: `prisma-error-TIMESTAMP.md` where `TIMESTAMP` is a placeholder for the current timestamp.
+File name: `studio-error-TIMESTAMP.zip` where `TIMESTAMP` is a placeholder for the current timestamp. It would contain the migrations and schema files with sensitive information redacted (see [Error Log Masking](#error-log-masking)) and an information file containing the error report:
 
 ```
 # Error report (Prisma Studio | July 23, 2019 | 14:42:23 h)
@@ -398,13 +409,13 @@ ${schema.prisma}
 
 Note that studio can also yield Photon errors as it uses Photon internally. The error log generation in that case would be done by Photon but the UI to prompt user to create a Github issue or send it to us would be handled by Studio.
 
-// TODO: Replace this with actual Studio telemetry spec once that is available.
-
 ### CLI
 
-On encountering an unexpected error, CLI should inform the user and prepare an error report with context of the issue and masked sensitive information to be shared manually or via telemetry.
+On encountering an unexpected error, CLI should inform the user and prepare an error report with context of the issue.
 
-This is covered in the [CLI telemetry spec](https://prisma-specs.netlify.com/cli/telemetry/).
+File name: `prisma-error-TIMESTAMP.zip` where `TIMESTAMP` is a placeholder for the current timestamp. It would contain the migrations and schema files with sensitive information redacted (see [Error Log Masking](#error-log-masking)).
+
+This is covered in the [CLI error handling spec](https://prisma-specs.netlify.com/cli/error-handling/).
 
 # Error Log Masking
 
@@ -444,3 +455,4 @@ We must ask the user before collecting such information. This is covered in the 
 - Batch API and errors?
 - Single errors or error arrays? (in the GraphQL layer for example?)
 - Error slugs in place of error codes like: https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin/src/rules
+- What about ID/Date/Json/Custom types wrt error handling?
