@@ -131,9 +131,9 @@ These include Windows and Mac, and multiple variations for Linux distributions
 | `debian`       | Debian              | 1.0.x, 1.1.y       | (tbd)     |
 | `rhel`         | CentOS              | 1.0.x, 1.1.y       | (tbd)     |
 
-### Linux Distributions and versions
+### Linux distributions and versions
 
-This table shows which linux distributions are compatible with our pre-built binaries.
+This table shows which Linux distributions are compatible with our pre-built binaries.
 
 | OS                  | Version                  | Build          | Status [?](#status-legend) | OpenSSL [[1]](#openssl) | Comment |
 | :------------------ | :----------------------- | :------------- | :------------------------: | :---------------------: | :------ |
