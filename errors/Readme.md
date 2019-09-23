@@ -13,7 +13,6 @@ Definition of errors in Prisma Framework. (In this document we make the distinct
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Motivation](#motivation)
 - [Error Causes and Handling Strategies](#error-causes-and-handling-strategies)
 - [Error Codes](#error-codes)
@@ -54,19 +53,19 @@ Definition of errors in Prisma Framework. (In this document we make the distinct
 
 ![Prisma 2 architecture diagram with errors overlay](./errors-spec.png)
 
-| Component   | Description                                                                                        |
-| ----------- | -------------------------------------------------------------------------------------------------- |
-| SDK Users   | Photon.js, Studio, Prisma CLI: dev, lift, generate commands, etc.                                  |
-| Prisma SDK  | Helps tools interact with binaries. Spec [here](../sdk-js/Readme.md)                               |
-| Core        | Binary artifacts of Prisma 2 compilation and a part of the SDK. Spec [here](../binaries/Readme.md) |
-| Data source | A database or any other data source supported by Prisma                                            |
+| Component            | Description                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Systems that use SDK | Photon.js, Studio, Prisma CLI: dev, lift, generate commands, etc.                                  |
+| Prisma SDK           | Helps tools interact with binaries. Spec [here](../sdk-js/Readme.md)                               |
+| Core                 | Binary artifacts of Prisma 2 compilation and a part of the SDK. Spec [here](../binaries/Readme.md) |
+| Data source          | A database or any other data source supported by Prisma                                            |
 
 Prisma 2 ecosystem provides various layers of tools that communicate with each other to provide desired outcome.
 
 Broadly, the life-cycle of a request (Query request or CLI command) can be seen in this diagram.
 
-| SDK User | →   | Prisma SDK | →   | Binaries | →   | Data source |
-| -------- | --- | ---------- | --- | -------- | --- | ----------- |
+| System that uses SDK | →   | Prisma SDK | →   | Binaries | →   | Data source |
+| -------------------- | --- | ---------- | --- | -------- | --- | ----------- |
 
 
 # Error Causes and Handling Strategies
