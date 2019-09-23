@@ -1,12 +1,13 @@
-- Start Date: 2019-08-28
-- RFC PR: (leave this empty)
-- Prisma Issue: (leave this empty)
+# Errors
 
----
+- Owner: @divyenduz
+- Stakeholders: @mavilein @timsuchanek @nikolasburk
+- State:
+  - Spec: In Progress 🚧
+  - Implementation: Future 👽
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 
 - [Motivation](#motivation)
 - [Error Causes and Handling Strategies](#error-causes-and-handling-strategies)
