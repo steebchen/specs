@@ -209,7 +209,7 @@ const deletedCount: number = await photon.user.delete().count()
 uts
 ```
 
-## Unique Constraints
+## Field-level Primary Key constraint
 
 Different unique constraints will change Photon's `where` blocks:
 
@@ -224,6 +224,8 @@ model User {
 ```ts
 photon.user.find({ id: 10 })
 ````
+
+### Field-level unique constraint
 
 ```groovy
 model User {
@@ -242,6 +244,8 @@ photon.user.find({ email: "alice@prisma.io" })
 photon.user.find({ id: 10, email: "alice@prisma.io" })
 ```
 
+### Model-level composite constraint (unnamed)
+
 ```groovy
 model User {
     id String @id
@@ -257,7 +261,7 @@ model User {
 photon.user.find({ id: 10 })
 photon.user.find({ email: "alice@prisma.io" })
 photon.user.find({
-  firstNameLastName: {
+  firstName_lastName: {
     firstName: "Alice",
     lastName: "Prisma"
   }
@@ -265,19 +269,21 @@ photon.user.find({
 // compiler error
 photon.user.find({
   email: "alice@prisma.io",
-  firstNameLastName: {
+  firstName_lastName: {
     firstName: "Alice",
     lastName: "Prisma"
   }
 })
 photon.user.find({
   id: 10,
-  firstNameLastName: {
+  firstName_lastName: {
     firstName: "Alice",
     lastName: "Prisma"
   }
 })
 ```
+
+### Naming the composite constraint
 
 ```groovy
 model User {
