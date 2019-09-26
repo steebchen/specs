@@ -13,10 +13,12 @@ Definition of errors in Prisma Framework. (In this document we make the distinct
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Motivation](#motivation)
 - [Error Causes and Handling Strategies](#error-causes-and-handling-strategies)
 - [Error Codes](#error-codes)
 - [Known Errors](#known-errors)
+  - [Known Errors Template](#known-errors-template)
   - [Prisma SDK](#prisma-sdk)
     - [Common](#common)
     - [Query Engine](#query-engine)
