@@ -14,7 +14,11 @@ The Prisma Engineering team uses a GitHub issues and milestone based process to 
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Prerequisite](#prerequisite)
+- [Notes](#notes)
+  - [Prerequisite](#prerequisite)
+  - [Process](#process)
+  - [Admin](#admin)
+  - [Interface with Product](#interface-with-product)
 - [Candidate Nomination](#candidate-nomination)
 - [Milestone Planning](#milestone-planning)
   - [Preparation](#preparation)
