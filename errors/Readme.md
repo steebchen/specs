@@ -13,7 +13,6 @@ Definition of errors in Prisma Framework. (In this document we make the distinct
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Motivation](#motivation)
 - [Error Causes and Handling Strategies](#error-causes-and-handling-strategies)
 - [Error Codes](#error-codes)
@@ -133,20 +132,45 @@ Error codes make identification/classification of error easier. Moreover, we can
 
 # Known Errors
 
+## Known Errors Template
+
+When we encounter a known error, we should try to convey enough information to the user so they get a good understanding of the error and can possibly unblock themselves.
+
+The format of our error should be the following:
+
+```
+{error_code}: {error_message}
+
+{serialized_meta_schema}
+
+Read more: {code_link}
+```
+
+| Template Field         | Description                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| error_code             | Code identifier of the encountered error                                             |
+| error_message          | Error message description that also contains a one liner for "how to fix" suggestion |
+| serialized_meta_schema | Serialization of the meta schema that might different for each error                 |
+| code_link              | Each error code has a permalink with detailed information                            |
+
+If we encounter a Rust panic, that is covered in the [Unknown Errors](#unknown-errors) section.
+
 ## Prisma SDK
 
 SDK acts as the interface between the binaries and the tools. This section covers errors from SDK, binaries and the network between SDK ⇆ Binary and Binary ⇆ Data source.
 
 ### Common
 
-| Title                            | Message                                                          | Code  |
-| -------------------------------- | ---------------------------------------------------------------- | ----- |
-| Incorrect database credentials   | Please check the database credentials again                      | P1000 |
-| Database not reachable           | The provided database URL is not reachable                       | P1001 |
-| Database timeout                 | Credentials are correct but request timed out                    | P1002 |
-| Database does not exist          | A database with the provided name does not exist                 | P1003 |
-| Incompatible binary              | The downloaded/provided binary is not compiled for this platform | P1004 |
-| Unable to start the query engine | The binary process crashed or failed to spawn                    | P1005 |
+| Title                            | Message                                                                                                                                                                                                                              | Code  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| Incorrect database credentials   | Authentication failed against database server at `${host}`, the provided database credentials for `${user}` are not valid. <br /> <br /> Please make sure to provide valid database credentials for the database server at \${host}. | P1000 |
+| Database not reachable           | Can't reach database server at `${host}`:`${port}` <br /> <br /> Please make sure your database server is running at \${host:port}.                                                                                                  | P1001 |
+| Database timeout                 | The database server at `${host}`:`${port}` was reached but timed out. <br /> <br /> Please try again.                                                                                                                                | P1002 |
+| Database does not exist          | Database `${databaseName}` does not exist on the database server at `${host}`. <br /> <br />                                                                                                                                         | P1003 |
+| Incompatible binary              | The downloaded/provided binary is not compiled for this platform                                                                                                                                                                     | P1004 |
+| Unable to start the query engine | The binary process crashed or failed to spawn                                                                                                                                                                                        | P1005 |
+
+Note on P1003: Different consumers of the SDK might handle that differently. Lift save, for example, shows a interactive dialog for user to create it.
 
 ### Query Engine
 
@@ -256,7 +280,8 @@ Error object:
 ```json
 {
   code: "<ERROR_CODE>"
-  message: "<ERROR_MESSAGE>"
+  message: "<ERROR_MESSAGE>",
+  meta: <meta-schema-object>
 }
 ```
 
@@ -457,8 +482,8 @@ We must ask the user before collecting such information. This is covered in the 
 
 # Open Questions?
 
-- Do we need error codes for anything other than the SDK?
-- Batch API and errors?
-- Single errors or error arrays? (in the GraphQL layer for example?)
+- Batch API and errors? Discussion https://www.notion.so/prismaio/Errors-Spec-Error-Arrays-4160085305444374a74f6a81b785e57a
+
+- Single errors or error arrays? (in the GraphQL layer for example?) Discussion https://www.notion.so/prismaio/Errors-Spec-Error-Arrays-4160085305444374a74f6a81b785e57a
+
 - Error slugs in place of error codes like: https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin/src/rules
-- What about ID/Date/Json/Custom types wrt error handling?
