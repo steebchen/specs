@@ -1,12 +1,12 @@
-# Release Milestones
+# Engineering Process
 
 - Owner: @janpio
-- Stakeholders: @schickling @sorenbs
+- Stakeholders: @sorenbs @mavilein
 - State: 
   - Spec: Outdated 🚨
   - Implementation: Fully implemented ✅
 
-We use GitHub Milestones to plan our releases. We use the following process to collect, nominate and commit issues to these milestones, then implement and release it, and reflect on the milestone afterwards:
+The Prisma Engineering team uses a GitHub issues and milestone based process to plan their releases.
 
 ---
 
@@ -27,9 +27,34 @@ We use GitHub Milestones to plan our releases. We use the following process to c
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Prerequisite
+## Notes
 
-triaged - only those are considered ready
+### Prerequisite
+
+- Work by default lives on GitHub
+- Externally created issues should be fully triaged - only those are considered ready
+
+### Process
+
+- `process/candidate` nomination
+- Planning Meeting => Put into Milestone
+- Work happens
+- additional work is added to milestone
+- Release notes are written based on all close issues and PRs of a sprint
+- Retrospective Meeting => `process/next-milestone`
+
+### Admin
+
+- PM overview: GitHub project board
+
+### Interface with Product
+
+- Participate on content creation in `prisma/specs`
+- Pull information from `prisma/specs` repository
+- Push questions or tasks to `primsa/specs` issues to unblock own work
+
+
+---
 
 ## Candidate Nomination
 
