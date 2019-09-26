@@ -13,46 +13,45 @@ This spec describes the Photon Javascript API
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
-  - [Prisma Schema](#prisma-schema)
-  - [Types](#types)
-  - [Basic Queries](#basic-queries)
-  - [Writing Data](#writing-data)
-    - [Write operations](#write-operations)
-      - [Nested Write API](#nested-write-api)
-      - [Fluent Write API](#fluent-write-api)
-    - [Many operations](#many-operations)
-    - [Nested writes](#nested-writes)
-  - [Load: Select / Include API](#load-select--include-api)
-    - [Default selection set](#default-selection-set)
-  - [Fluent API](#fluent-api)
-    - [Null narrowing](#null-narrowing)
-    - [Expressing the same query using fluent API syntax and nested writes](#expressing-the-same-query-using-fluent-api-syntax-and-nested-writes)
-  - [Mental model: Graph traversal](#mental-model-graph-traversal)
-  - [Expressions](#expressions)
-    - [Criteria Filters](#criteria-filters)
-    - [Order By](#order-by)
-    - [Write Operations (Update/Atomic)](#write-operations-updateatomic)
-    - [Aggregations](#aggregations)
-    - [Group by](#group-by)
-  - [Meta response](#meta-response)
-  - [Optimistic Concurrency Control / Optimistic Offline Lock](#optimistic-concurrency-control--optimistic-offline-lock)
-    - [Supported operations](#supported-operations)
-  - [Batching](#batching)
-  - [Distinct](#distinct)
-  - [Criteria API](#criteria-api)
-  - [Design decisions](#design-decisions)
-  - [Constructor](#constructor)
-  - [Connection management](#connection-management)
+- [Prisma Schema](#prisma-schema)
+- [Types](#types)
+- [Basic Queries](#basic-queries)
+- [Writing Data](#writing-data)
+  - [Write operations](#write-operations)
+    - [Nested Write API](#nested-write-api)
+    - [Fluent Write API](#fluent-write-api)
+  - [Many operations](#many-operations)
+  - [Nested writes](#nested-writes)
+- [Load: Select / Include API](#load-select--include-api)
+  - [Default selection set](#default-selection-set)
+- [Fluent API](#fluent-api)
+  - [Null narrowing](#null-narrowing)
+  - [Expressing the same query using fluent API syntax and nested writes](#expressing-the-same-query-using-fluent-api-syntax-and-nested-writes)
+- [Mental model: Graph traversal](#mental-model-graph-traversal)
+- [Expressions](#expressions)
+  - [Criteria Filters](#criteria-filters)
+  - [Order By](#order-by)
+  - [Write Operations (Update/Atomic)](#write-operations-updateatomic)
+  - [Aggregations](#aggregations)
+  - [Group by](#group-by)
+- [Meta response](#meta-response)
+- [Optimistic Concurrency Control / Optimistic Offline Lock](#optimistic-concurrency-control--optimistic-offline-lock)
+  - [Supported operations](#supported-operations)
+- [Batching](#batching)
+- [Distinct](#distinct)
+- [Criteria API](#criteria-api)
+- [Design decisions](#design-decisions)
+- [Constructor](#constructor)
+- [Connection management](#connection-management)
 - [Error Handling](#error-handling)
   - [Error Character Encoding](#error-character-encoding)
 - [Unresolved questions](#unresolved-questions)
-    - [Figured out but needs spec](#figured-out-but-needs-spec)
-    - [Bigger todos](#bigger-todos)
-    - [Small & self-contained](#small--self-contained)
-    - [Ugly parts](#ugly-parts)
-    - [Related](#related)
-    - [Future topics](#future-topics)
+  - [Figured out but needs spec](#figured-out-but-needs-spec)
+  - [Bigger todos](#bigger-todos)
+  - [Small & self-contained](#small--self-contained)
+  - [Ugly parts](#ugly-parts)
+  - [Related](#related)
+  - [Future topics](#future-topics)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -147,27 +146,29 @@ type Profile = {
 
 ```ts
 // Find single record by @id field. Returns nullable result
-const alice: User | null = await photon.user.findUnique('user-id')
+const alice: User | null = await photon.user.find("user-id")
 
 // Find single record by other unique field
-const alice: User | null = await photon.user.findUnique({
-  email: 'alice@prisma.io',
+const alice: User | null = await photon.user.find({
+  email: "alice@prisma.io"
 })
 
 // Find using composite/multi-field unique indexes
 // Note: This example is not compatible with the example schema above.
-const john: User | null = await photon.user.findUnique({
-  firstName: 'John',
-  lastName: 'Doe',
+const john: User | null = await photon.user.find({
+  firstName_lastName: {
+    firstName: "John",
+    lastName: "Doe"
+  }
 })
 
-// Find using unique relation
-const bob: User | null = await photon.user.findUnique({
-  bestFriend: { email: 'alice@prisma.io' },
+// Find using named unique relation
+const bob: User | null = await photon.user.find({
+  bestFriend: { email: "alice@prisma.io" }
 })
 
 // Find by (non-)unique field and return first found record
-const firstDoe: User | null = await photon.user.findFirst({ lastName: 'Doe' })
+const firstDoe: User | null = await photon.user.findFirst({ lastName: "Doe" })
 
 // Get many nodes
 const allUsers: User[] = await photon.user.findMany()
@@ -175,37 +176,144 @@ const first100Users: User[] = await photon.user.findMany({ first: 100 })
 
 // Ordering
 const usersByEmail: User[] = await photon.user.findMany({
-  orderBy: { email: 'ASC' },
+  orderBy: { email: "ASC" }
 })
 const usersByEmailAndName: User[] = await photon.user.findMany({
-  orderBy: { email: 'ASC', name: 'DESC' },
+  orderBy: { email: "ASC", name: "DESC" }
 })
 const usersByProfile: User[] = await photon.user.findMany({
-  orderBy: { profile: { imageSize: 'ASC' } },
+  orderBy: { profile: { imageSize: "ASC" } }
 })
 
 // Where / filtering
-await photon.user.findMany({ where: { email: 'alice@gmail.com' } })
-await photon.user.findMany({ where: { email: { contains: '@gmail.com' } } })
+await photon.user.findMany({ where: { email: "alice@gmail.com" } })
+await photon.user.findMany({ where: { email: { contains: "@gmail.com" } } })
 await photon.user.findMany({
-  where: { email: { containsInsensitive: '@gmail.com' } },
+  where: { email: { containsInsensitive: "@gmail.com" } }
 })
 
 // Get first of many
 const user: User | null = await photon.user
-  .findMany({ where: { lastName: 'Doe' } })
+  .findMany({ where: { lastName: "Doe" } })
   .first()
 
 // Exists
-const userFound: boolean = await photon.user.findUnique('bobs-id').exists()
+const userFound: boolean = await photon.user.find("bobs-id").exists()
 const foundAtLeastOneUser: boolean = await photon.user
-  .findMany({ email: { containsInsensitive: '@gmail.com' } })
+  .findMany({ email: { containsInsensitive: "@gmail.com" } })
   .exists()
 
 // Simple aggregation short
 // TODO more examples
 const deletedCount: number = await photon.user.delete().count()
 uts
+```
+
+## Unique Constraints
+
+Different unique constraints will change Photon's `where` blocks:
+
+````groovy
+model User {
+    id String @id
+    firstName String
+    lastName String
+    email String
+}
+
+```ts
+photon.user.find({ id: 10 })
+````
+
+```groovy
+model User {
+    id String @id
+    firstName String
+    lastName String
+    email String  @unique
+}
+```
+
+```ts
+// allowed
+photon.user.find({ id: 10 })
+photon.user.find({ email: "alice@prisma.io" })
+// compiler error
+photon.user.find({ id: 10, email: "alice@prisma.io" })
+```
+
+```groovy
+model User {
+    id String @id
+    firstName String
+    lastName String
+    email String @unique
+    @@unique([ firstName, lastName ])
+}
+```
+
+```ts
+// allowed
+photon.user.find({ id: 10 })
+photon.user.find({ email: "alice@prisma.io" })
+photon.user.find({
+  firstNameLastName: {
+    firstName: "Alice",
+    lastName: "Prisma"
+  }
+})
+// compiler error
+photon.user.find({
+  email: "alice@prisma.io",
+  firstNameLastName: {
+    firstName: "Alice",
+    lastName: "Prisma"
+  }
+})
+photon.user.find({
+  id: 10,
+  firstNameLastName: {
+    firstName: "Alice",
+    lastName: "Prisma"
+  }
+})
+```
+
+```groovy
+model User {
+    id String @id
+    firstName String
+    lastName String
+    email String @unique
+    @@unique([ firstName, lastName ], name: "fullName")
+}
+```
+
+```ts
+// allowed
+photon.user.find({ id: 10 })
+photon.user.find({ email: "alice@prisma.io" })
+photon.user.find({
+  fullName: {
+    firstName: "Alice",
+    lastName: "Prisma"
+  }
+})
+// compiler error
+photon.user.find({
+  email: "alice@prisma.io",
+  fullName: {
+    firstName: "Alice",
+    lastName: "Prisma"
+  }
+})
+photon.user.find({
+  id: 10,
+  fullName: {
+    firstName: "Alice",
+    lastName: "Prisma"
+  }
+})
 ```
 
 ## Writing Data
@@ -236,85 +344,85 @@ uts
 ```ts
 const newUser: User = await photon.user
   .create({
-    firstName: 'Alice',
-    lastName: 'Doe',
-    email: 'alice@prisma.io',
-    profile: { imageUrl: 'http://...', imageSize: 100 },
+    firstName: "Alice",
+    lastName: "Doe",
+    email: "alice@prisma.io",
+    profile: { imageUrl: "http://...", imageSize: 100 }
   })
   .load()
 
 const updatedUser: User = await photon.user
-  .findUnique('bobs-id')
-  .update({ firstName: 'Alice' })
+  .find("bobs-id")
+  .update({ firstName: "Alice" })
   .load()
 
 const updatedUserByEmail: User = await photon.user
-  .findUnique({ email: 'bob@prisma.io' })
-  .update({ firstName: 'Alice' })
+  .find({ email: "bob@prisma.io" })
+  .update({ firstName: "Alice" })
   .load()
 
 // Like `update` but replaces entire record. Requires all required fields like `create`.
 // Resets all connections.
 const replacedUserByEmail: User = await photon.user
-  .findUnique({ email: 'bob@prisma.io' })
+  .find({ email: "bob@prisma.io" })
   .replace({
-    firstName: 'Alice',
-    lastName: 'Doe',
-    email: 'alice@prisma.io',
-    profile: { imageUrl: 'http://...', imageSize: 100 },
+    firstName: "Alice",
+    lastName: "Doe",
+    email: "alice@prisma.io",
+    profile: { imageUrl: "http://...", imageSize: 100 }
   })
   .load()
 
 const maybeNewUser: User = await photon.user
-  .findUnique('alice-id')
+  .find("alice-id")
   .orCreate({
-    firstName: 'Alice',
-    lastName: 'Doe',
-    email: 'alice@prisma.io',
-    profile: { imageUrl: 'http://...', imageSize: 100 },
+    firstName: "Alice",
+    lastName: "Doe",
+    email: "alice@prisma.io",
+    profile: { imageUrl: "http://...", imageSize: 100 }
   })
   .load()
 
 const upsertedUser: User = await photon.user
-  .findUnique('alice-id')
-  .update({ firstName: 'Alice' })
+  .find("alice-id")
+  .update({ firstName: "Alice" })
   .orCreate({
-    firstName: 'Alice',
-    lastName: 'Doe',
-    email: 'alice@prisma.io',
-    profile: { imageUrl: 'http://...', imageSize: 100 },
+    firstName: "Alice",
+    lastName: "Doe",
+    email: "alice@prisma.io",
+    profile: { imageUrl: "http://...", imageSize: 100 }
   })
   .load()
 
 const upreplacedUser: User = await photon.user
-  .findUnique('alice-id')
+  .find("alice-id")
   .replace({
-    firstName: 'Alice',
-    lastName: 'Doe',
-    email: 'alice@prisma.io',
-    profile: { imageUrl: 'http://...', imageSize: 100 },
+    firstName: "Alice",
+    lastName: "Doe",
+    email: "alice@prisma.io",
+    profile: { imageUrl: "http://...", imageSize: 100 }
   })
   .orCreate({
-    firstName: 'Alice',
-    lastName: 'Doe',
-    email: 'alice@prisma.io',
-    profile: { imageUrl: 'http://...', imageSize: 100 },
+    firstName: "Alice",
+    lastName: "Doe",
+    email: "alice@prisma.io",
+    profile: { imageUrl: "http://...", imageSize: 100 }
   })
   .load()
 
 // Note: Delete operation sends query BEFORE record is deleted
-const result: undefined = await photon.user.findUnique('bobs-id').delete()
+const result: undefined = await photon.user.find("bobs-id").delete()
 ```
 
 ### Many operations
 
 ```ts
 await photon.user
-  .findMany({ where: { email: { endsWith: '@gmail.com' } } })
-  .update({ lastName: 'Doe' })
+  .findMany({ where: { email: { endsWith: "@gmail.com" } } })
+  .update({ lastName: "Doe" })
 
 await photon.user
-  .findMany({ where: { email: { endsWith: '@gmail.com' } } })
+  .findMany({ where: { email: { endsWith: "@gmail.com" } } })
   .delete()
 ```
 
@@ -326,10 +434,10 @@ await photon.user
 ```ts
 // Nested create
 await photon.user.create({
-  firstName: 'Alice',
+  firstName: "Alice",
   posts: {
-    create: { title: 'New post', body: 'Hello world', published: true },
-  },
+    create: { title: "New post", body: "Hello world", published: true }
+  }
 })
 
 // TODO: How to return data from nested writes
@@ -345,22 +453,35 @@ await photon.user.create({
 
 // Nested write with connect
 await photon.user.create({
-  firstName: 'Alice',
-  lastName: 'Doe',
-  email: 'alice@prisma.io',
-  profile: { imageUrl: 'http://...', imageSize: 100 },
-  posts: { connect: 'post-id' },
+  firstName: "Alice",
+  lastName: "Doe",
+  email: "alice@prisma.io",
+  profile: { imageUrl: "http://...", imageSize: 100 },
+  posts: { connect: "post-id" }
+})
+
+// Create a post and connect it to the author with a unique constraint
+await photon.post.create({
+  title: "My cool blog post",
+  author: {
+    connect: {
+      firstName_lastName: {
+        firstName: "John",
+        lastName: "Doe"
+      }
+    }
+  }
 })
 
 // How to get newly created posts?
-await photon.user.findUnique('bobs-id').update({
+await photon.user.find("bobs-id").update({
   posts: {
-    create: { title: 'New post', body: 'Hello world', published: true },
-  },
+    create: { title: "New post", body: "Hello world", published: true }
+  }
 })
 
 // await photon.user
-//   .findUnique('bobs-id')
+//   .find('bobs-id')
 //   .post()
 //   .update({
 //     create: { title: 'New post', body: 'Hello world', published: true },
@@ -382,7 +503,7 @@ type DynamicResult1 = {
 }[]
 
 const userWithPostsAndFriends: DynamicResult1 = await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .load({ select: { posts: { select: { comments: true } }, friends: true } })
 
 type DynamicResult2 = (User & {
@@ -391,7 +512,7 @@ type DynamicResult2 = (User & {
 })[]
 
 const userWithPostsAndFriends: DynamicResult2 = await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .load({ include: { posts: { include: { comments: true } }, friends: true } })
 ```
 
@@ -405,52 +526,54 @@ const userWithPostsAndFriends: DynamicResult2 = await photon.user
 ## Fluent API
 
 - TODO: Spec out different between chainable vs terminating
-  - Chainable: schema-based fields (e.g. relations), find, update, upsert, create,
-  - Terminating: select, include, delete, count, scalar field, exists, aggregates?
+  - Chainable: schema-based fields (e.g. relations), find, update, upsert,
+    create,
+  - Terminating: select, include, delete, count, scalar field, exists,
+    aggregates?
 - TODO: Spec out return behavior
   - read traversal
   - write operation: single vs multi-record operation
   - Alternative: explicit fetch/query
-- TODO: tradeoff multi-record-operations -> return count by default but can be adjusted to return actual data -> how?
+- TODO: tradeoff multi-record-operations -> return count by default but can be
+  adjusted to return actual data -> how?
 - TODO: Document transactional behavior
 
 ```ts
-const bobsPosts: Post[] = await photon.user
-  .findUnique('bobs-id')
-  .post({ first: 50 })
+const bobsPosts: Post[] = await photon.user.find("bobs-id").post({ first: 50 })
 
 // Nested arrays are flat-mapped
 const comments: Comment[] = await.photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .post()
   .comments()
 
 type DynamicResult3 = (Post & { comments: Comment[] })[]
 
 const bobsPosts: DynamicResult3 = await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .post({ first: 50 })
   .load({ include: { comments: true } })
 
 const media: Media[] = await photon.post
-  .findUnique('id')
-  .comments({ where: { text: { startsWith: 'Hello' } } })
-  .media({ where: { url: 'exact-url' }, first: 100 })
+  .find("id")
+  .comments({ where: { text: { startsWith: "Hello" } } })
+  .media({ where: { url: "exact-url" }, first: 100 })
   .update({ uploaded: true })
   .load()
 
 // Supports chaining multiple write operations
 await photon.user
-  .findUnique('user-id')
-  .update({ email: 'new@email.com' })
+  .find("user-id")
+  .update({ email: "new@email.com" })
   .post({ where: { published: true } })
-  .update({ comments: { connect: 'comment-id' } })
+  .update({ comments: { connect: "comment-id" } })
 ```
 
 ### Null narrowing
 
 - Single-record `find` queries return `null` by default
-- `update` and `delete` as well as field traversal queries will fail if record is `null`
+- `update` and `delete` as well as field traversal queries will fail if record
+  is `null`
 
 ### Expressing the same query using fluent API syntax and nested writes
 
@@ -459,25 +582,25 @@ await photon.user
 
 ```ts
 // Declarative
-await photon.user.findUnique('bob-id').update({
-  email: 'new@email.com',
+await photon.user.find("bob-id").update({
+  email: "new@email.com",
   posts: {
     update: {
       where: { published: true },
-      data: { comments: { connect: 'comment-id' } },
-    },
-  },
+      data: { comments: { connect: "comment-id" } }
+    }
+  }
 })
 
 // Fluent
 await photon.user
-  .findUnique('user-id')
-  .update({ email: 'new@email.com' })
+  .find("user-id")
+  .update({ email: "new@email.com" })
   .post({ where: { published: true } })
-  .update({ comments: { connect: 'comment-id' } })
+  .update({ comments: { connect: "comment-id" } })
 
 // await photon.user
-//   .findUnique('user-id')
+//   .find('user-id')
 //   .update({ email: 'new@email.com' })
 //   .post({ where: { published: true } })
 //   .comments()
@@ -501,18 +624,18 @@ await photon.user
 
 ```ts
 // Find one
-await photon.user.findUnique(u => u.email.eq('alice@prisma.io'))
+await photon.user.find(u => u.email.eq("alice@prisma.io"))
 
 // Find many
 await photon.user.findMany({
-  where: u => u.firstName.subString(1, 4).eq('arl'),
+  where: u => u.firstName.subString(1, 4).eq("arl")
 })
-await photon.user.findMany({ where: u => u.email.contains('@gmail.com') })
+await photon.user.findMany({ where: u => u.email.contains("@gmail.com") })
 await photon.user.findMany({
-  where: u => u.email.insensitive.contains('@gmail.com'),
+  where: u => u.email.insensitive.contains("@gmail.com")
 })
 await photon.user.findMany({
-  where: u => u.email.toLowerCase().contains('@gmail.com'),
+  where: u => u.email.toLowerCase().contains("@gmail.com")
 })
 ```
 
@@ -521,7 +644,7 @@ await photon.user.findMany({
 ```ts
 await photon.user.findMany({ orderBy: u => u.email.asc() })
 await photon.user.findMany({
-  orderBy: (u, e) => e.and(u.email.asc(), u.firstName.desc()),
+  orderBy: (u, e) => e.and(u.email.asc(), u.firstName.desc())
 })
 await photon.user.findMany({ orderBy: u => u.profile.imageSize.asc() })
 ```
@@ -533,7 +656,7 @@ Set:
 ```ts
 await photon.users
   .findMany()
-  .update({ email: u => u.email.set('bob@gmail.com') })
+  .update({ email: u => u.email.set("bob@gmail.com") })
 ```
 
 Type specific:
@@ -545,7 +668,7 @@ See:
 
 ```ts
 // String
-await photon.users.findMany().update({ email: u => u.email.concat('-v2') })
+await photon.users.findMany().update({ email: u => u.email.concat("-v2") })
 await photon.users.findMany().update({ email: u => u.email.toLowerCase() })
 await photon.users.findMany().update({ email: u => u.email.subString(1, 4) })
 // ...
@@ -570,7 +693,7 @@ Top level callback
 ```ts
 await photon.users.findMany().update(u => ({
   firstName: u.firstName.toLowerCase(),
-  lastName: u.lastName.toLowerCase(),
+  lastName: u.lastName.toLowerCase()
 }))
 ```
 
@@ -610,13 +733,13 @@ type DynamicResult4 = {
 const groupByResult: DynamicResult4 = await photon.user
   .findMany({
     where: { isActive: true },
-    orderBy: { lastName: 'ASC' },
-    first: 100,
+    orderBy: { lastName: "ASC" },
+    first: 100
   })
   .group({
-    by: 'lastName',
+    by: "lastName",
     having: g => g.age.avg.gt(10),
-    first: 10,
+    first: 10
   })
   .load({ include: { avgAge: g => g.age.avg() } })
 
@@ -630,12 +753,13 @@ await photon.user.findMany().group({ by: u => u.email.toLowerCase() })
 
 ## Meta response
 
-Note: This is a early draft for this feature and won't be implemented in the near future
+Note: This is a early draft for this feature and won't be implemented in the
+near future
 
 ```ts
 // PageInfo
 const bobsPostsWithPageInfo: PageInfo<Post> = await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .post({ first: 50 })
   .loadWithPageInfo()
 
@@ -646,7 +770,7 @@ type PageInfo<Data> = {
 }
 
 const [bobsPosts, meta]: [Post[], Meta] = await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .post({ first: 50 })
   .loadWithMeta({ pageInfo: true })
 ```
@@ -676,29 +800,29 @@ const [bobsPosts, meta]: [Post[], Meta] = await photon.user
 
 ```ts
 await photon.user
-  .findUnique('alice-id')
-  .update({ firstName: 'Alice' }, { if: { version: 12 } })
+  .find("alice-id")
+  .update({ firstName: "Alice" }, { if: { version: 12 } })
 
 await photon.user
-  .findUnique('alice-id')
-  .update({ firstName: 'Alice' }, { if: { version: 12 } })
+  .find("alice-id")
+  .update({ firstName: "Alice" }, { if: { version: 12 } })
   .orCreate({
     /* ... */
   })
 
-await photon.user.findUnique('bobs-id').delete({ if: { version: 12 } })
+await photon.user.find("bobs-id").delete({ if: { version: 12 } })
 
 // Global condition
 await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .delete()
-  .if([{ model: 'User', where: 'bobs-id', if: { name: 'Bob' } }])
+  .if([{ model: "User", where: "bobs-id", if: { name: "Bob" } }])
 
 // both can be combined
 await photon.user
-  .findUnique('bobs-id')
+  .find("bobs-id")
   .delete({ if: { version: 12 } })
-  .if([{ model: 'User', where: 'alices-id', if: { name: 'Alice' } }])
+  .if([{ model: "User", where: "alices-id", if: { name: "Alice" } }])
 ```
 
 ## Batching
@@ -707,8 +831,8 @@ Note: Combined with OCC (i.e. `if`) also known as "unit of work"
 
 ```ts
 // Batching, don't get the results with $noData
-const m1 = photon.user.create({ firstName: 'Alice' })
-const m2 = photon.post.create({ title: 'Hello world' })
+const m1 = photon.user.create({ firstName: "Alice" })
+const m2 = photon.post.create({ title: "Hello world" })
 const [u1, p1]: [boolean, boolean] = await photon.batch([m1, m2])
 
 // TODO
@@ -750,7 +874,8 @@ const distinctCount: number = await photon.post
 - Case sensitivity (https://github.com/prisma/prisma2/issues/258)
 - Shortcuts
   - id
-    - multi-column uniques (See slack thread https://prisma.slack.com/archives/CKQTGR6T0/p1564566886224500?thread_ts=1564552560.218200&cid=CKQTGR6T0)
+    - multi-column uniques (See slack thread
+      https://prisma.slack.com/archives/CKQTGR6T0/p1564566886224500?thread_ts=1564552560.218200&cid=CKQTGR6T0)
 
 ## Design decisions
 
@@ -889,7 +1014,7 @@ await photon.user.findMany({
 })
 
 // Raw: Knex & Prisma
-const userWithPostsAndFriends1 = await photon.user.findUnique({
+const userWithPostsAndFriends1 = await photon.user.find({
   where: knex.whereBuilderInSelecet(
     knex.fields.User.name,
     knex.queryMany.Post({ title: 'Alice' }, kx.fields.Post.title),
@@ -898,7 +1023,7 @@ const userWithPostsAndFriends1 = await photon.user.findUnique({
 })
 
 // Raw: SQL & Prisma
-const userWithPostsAndFriends2 = await photon.user.findUnique({
+const userWithPostsAndFriends2 = await photon.user.find({
   where: {
     raw: 'User.name != "n/a"',
   },
@@ -960,7 +1085,7 @@ const postStreamWithPageInfo = await prisma
   .$stream()
   .$withPageInfo()
 
-for await (const posts of photon.user.findUnique('bobs-id')
+for await (const posts of photon.user.find('bobs-id')
   .post({ first: 50 })
   .batch({ batchSize: 100 })) {
   console.log(posts) // 100 posts
@@ -1015,7 +1140,7 @@ const prisma = new Photon({
 })
 ```
 
-### Events (non.findUnique('bobs-id')-blocking)
+### Events (non.find('bobs-id')-blocking)
 
 const photon = new Photon()
 photon.on('User:beforeCreate', user => {
@@ -1058,7 +1183,9 @@ photon.user.findMany({
 
 ## Error Character Encoding
 
-Photon generates pretty error messages with ANSI characters for features like color coding errors and warnings in queries and newlines that are very useful for development as they usually pin point the issue.
+Photon generates pretty error messages with ANSI characters for features like
+color coding errors and warnings in queries and newlines that are very useful
+for development as they usually pin point the issue.
 
 However, when this data is serialized it contains a lot of unicode characters.
 
@@ -1076,17 +1203,25 @@ Error: ^[[31mInvalid ^[[1m`const data = await photon.users.findMany()`^[[22m inv
 
 </details>
 
-There are two prominent use cases amongst others for disabling/better structuring the error logs:
+There are two prominent use cases amongst others for disabling/better
+structuring the error logs:
 
-1. In Production logs, one might want to read the error messages thrown by Photon.
+1. In Production logs, one might want to read the error messages thrown by
+   Photon.
 
-2. In tools like Studio, it currently strips the ANSI characters (like [this](https://codesandbox.io/s/photon-pretty-errors-m4l77)) and displays the output as the error message.
+2. In tools like Studio, it currently strips the ANSI characters (like
+   [this](https://codesandbox.io/s/photon-pretty-errors-m4l77)) and displays the
+   output as the error message.
 
 To solve these two use case, Photon can do the following:
 
-1. Use `NODE_ENV`. When `NODE_ENV` is set to `development` or is unset, Photon can emit logs with ANSI characters. However, when `NODE_ENV` is set to `production` Photon can omit ANSI characters and any additional newline characters from the logs.
+1. Use `NODE_ENV`. When `NODE_ENV` is set to `development` or is unset, Photon
+   can emit logs with ANSI characters. However, when `NODE_ENV` is set to
+   `production` Photon can omit ANSI characters and any additional newline
+   characters from the logs.
 
-2. Photon can additionally offer `prettyLogs` as a constructor argument (defaults to `true`) to switch off the pretty error logging.
+2. Photon can additionally offer `prettyLogs` as a constructor argument
+   (defaults to `true`) to switch off the pretty error logging.
 
 # Unresolved questions
 
@@ -1114,10 +1249,12 @@ To solve these two use case, Photon can do the following:
 - [ ] Expressions API/DSL
 - [ ] Binary copying
 - [ ] Raw API fallbacks
-- [ ] Default selection set: Include ids of to-one relations (https://github.com/prisma/photonjs/issues/188)
+- [ ] Default selection set: Include ids of to-one relations
+      (https://github.com/prisma/photonjs/issues/188)
 - [ ] Jump to definition
 - [ ] edge concept in schema
-- [ ] `.replace()` vs `.update({}, { replace: true })` (alternative: `overwrite: true`, `reset: true`)
+- [ ] `.replace()` vs `.update({}, { replace: true })` (alternative:
+      `overwrite: true`, `reset: true`)
 - [x] Batching
 - [ ] Validate API with planned supported data sources
 - [ ] Bulk API / Streaming (read / write)
@@ -1125,11 +1262,13 @@ To solve these two use case, Photon can do the following:
 
 ### Small & self-contained
 
-- [ ] Decouple engine `connect` API from Photon instance (solves: https://github.com/prisma/photonjs/issues/153)
+- [ ] Decouple engine `connect` API from Photon instance (solves:
+      https://github.com/prisma/photonjs/issues/153)
 - [x] Distinct
 - [ ] Tracing
-- [ ] `find` vs `findUnique` vs `get` ...
-- [ ] Terminology: link vs connect (https://github.com/prisma/photonjs/issues/227)
+- [ ] `find` vs `find` vs `get` ...
+- [ ] Terminology: link vs connect
+      (https://github.com/prisma/photonjs/issues/227)
 - [ ] Cascading deletes
 - [ ] Force indexes
 - [ ] `Photon` constructor API
@@ -1153,12 +1292,22 @@ To solve these two use case, Photon can do the following:
 ### Future topics
 
 - [ ] Non-CRUD API operations
-- [ ] Silent mutations [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
+- [ ] Silent mutations
+      [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
 - [ ] Real-time API (subscriptions/live queries)
-- [ ] Dependent batch writes (see GraphQL export directive https://github.com/graphql/graphql-js/issues/462)
+- [ ] Dependent batch writes (see GraphQL export directive
+      https://github.com/graphql/graphql-js/issues/462)
 - [ ] Usage in browser (depends on WASM)
 - [ ] Photon usage with Prisma server/cluster
 - [ ] Meta responses
   - [ ] How to query records that were "touched" during nested writes
   - [ ] (Nested) page info
 - [ ] Union queries
+
+```
+
+```
+
+```
+
+```
