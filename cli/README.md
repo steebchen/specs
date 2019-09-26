@@ -55,7 +55,7 @@ Also:
 
 ### Migrate datamodel 
 
-`prisma2 lift`
+`prisma2 lift x`
 
 => Lift
 
