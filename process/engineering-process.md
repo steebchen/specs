@@ -6,7 +6,7 @@
   - Spec: Outdated 🚨
   - Implementation: Fully implemented ✅
 
-The Prisma Engineering team uses a GitHub issues and milestone based process to plan their releases.
+The Prisma Engineering team uses a GitHub issues and milestone based process to plan and track their work.
 
 ---
 
