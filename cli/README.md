@@ -20,9 +20,33 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Functional Spec
+## Problem, Idea, Concept
 
-Prisma CLI offers essential functionality to Prisma users:
+Prisma CLI offers essential functionality to Prisma users.
+
+- Interactive commands
+- Non Interactive commands (scriptable, automation, CI)
+
+## Use Cases
+
+1. Install Prisma
+1. Set up Prisma in existing project with existing database
+1. Create new project with Prisma
+1. Play with and experience Prisma
+1. Iterate on Datamodel
+1. Migrate with Lift
+1. Generate Photon.js
+1. Help Prisma 1 users to upgrade
+
+## Installation
+
+TODO
+
+- npm/yarn default
+- All other options as fallback: Homebrew, curl, chocolatey, ...
+
+
+## Commands
 
 ### Setup Prisma
 
