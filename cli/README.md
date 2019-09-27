@@ -4,7 +4,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Functional Spec](#functional-spec)
+- [Problem, Idea, Concept](#problem-idea-concept)
+- [Use Cases](#use-cases)
+- [Installation](#installation)
+- [Commands](#commands)
   - [Setup Prisma](#setup-prisma)
   - [Create datamodel based on existing database](#create-datamodel-based-on-existing-database)
   - [Iterate on datamodel (watch mode)](#iterate-on-datamodel-watch-mode)
