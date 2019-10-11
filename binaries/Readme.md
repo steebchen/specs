@@ -456,10 +456,3 @@ PRISMA_QUERY_ENGINE_BINARY=./custom-query-engine-binary # On local
 Unset `PRISMA_QUERY_ENGINE_BINARY` in production for it to pick the only binary specified in `binaryTargets`.
 
 [Examples for other deployment scenarios](https://github.com/prisma/prisma-examples/tree/prisma2/deployment-platforms)
-
-# Unresolved questions
-
-- [ ] Should we unify different binaries (query engine, migration engine, ...) into one single binary?
-- [ ] Some platforms [tally `package.json` with the actual contents of `node_modules`](https://github.com/prisma/photonjs/issues/117), this spec does not address
-      that issue.
-- [ ] Possible New Dimension: Is libssl built for specific distros? E.g. does libssl1.0.1 built on centos not work for ubuntu? https://github.com/prisma/prisma2/issues/157
