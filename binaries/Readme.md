@@ -117,7 +117,18 @@ of OpenSSL versions. This results in a few binaries which work on a large select
 of operating systems, distributions and cloud platforms.
 
 Initially, we built specific binaries for given platforms (e.g. Netlify), which resulted in many 
-binaries which couldn't be shared with similar platforms and it was hard to maintain. 
+binaries which couldn't be shared with similar platforms and it was hard to maintain.
+
+### OpenSSL
+
+Prisma uses [OpenSSL](https://www.openssl.org/) to enable a secure communication to remote databases.
+This means OpenSSL has to be either shipped with the binary ("static linking") or exist on
+the users's machine ("dynamic linking"). As it is critical to always run the latest OpenSSL due to security
+reasons, Prisma dynamically links OpenSSL so the user can update OpenSSL (usually with their native operating
+system package manager) independent of Prisma. Installing OpenSSL downloads a few files in common directories,
+which are usually named after the package name `libssl`, such as `libssl.so.10`, and the Prisma binaries
+automatically find and use these files. If they they don't exist on the user's system or are incompatible, Prisma
+will crash and exits with an error which describes which file is missing. 
 
 ### Binary builds
 
