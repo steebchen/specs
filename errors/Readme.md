@@ -1,66 +1,727 @@
-- Start Date: 2019-07-10
-- RFC PR: (leave this empty)
-- Prisma Issue: (leave this empty)
-
----
-
 # Errors
 
-In this document we make the distinction between [Unknown Errors](#unknown-errors) and [Known Errors](#known-errors).
+- Owner: @divyenduz
+- Stakeholders: @mavilein @timsuchanek @nikolasburk
+- State:
+  - Spec: In Progress 🚧
+  - Implementation: Future 👽
+
+Definition of errors in Prisma Framework. (In this document we make the distinction between [Unknown Errors](https://github.com/prisma/specs/tree/master/errors#unknown-errors) and [Known Errors](https://github.com/prisma/specs/tree/master/errors#known-errors).)
+
+---
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [Motivation](#motivation)
+- [Error Causes and Handling Strategies](#error-causes-and-handling-strategies)
+- [Error Codes](#error-codes)
+- [Known Errors](#known-errors)
+  - [Known Errors Template](#known-errors-template)
+  - [Prisma SDK](#prisma-sdk)
+    - [Common](#common)
+      - [P1000: Incorrect database credentials](#p1000-incorrect-database-credentials)
+      - [P1001: Database not reachable](#p1001-database-not-reachable)
+      - [P1002: Database timeout](#p1002-database-timeout)
+      - [P1003: Database does not exist](#p1003-database-does-not-exist)
+      - [P1004: Incompatible binary](#p1004-incompatible-binary)
+      - [P1005: Unable to start the query engine](#p1005-unable-to-start-the-query-engine)
+      - [P1006: Binary not found](#p1006-binary-not-found)
+      - [P1007: Missing write access to download binary](#p1007-missing-write-access-to-download-binary)
+      - [P1008: Database operation timeout](#p1008-database-operation-timeout)
+      - [P1009: Database already exists](#p1009-database-already-exists)
+      - [P1010: Database access denied](#p1010-database-access-denied)
+    - [Query Engine](#query-engine)
+      - [P2000: Input value too long](#p2000-input-value-too-long)
+      - [P2001: Record not found](#p2001-record-not-found)
+      - [P2002: Unique key violation](#p2002-unique-key-violation)
+      - [P2003: Foreign key violation](#p2003-foreign-key-violation)
+      - [P2004: Constraint violation](#p2004-constraint-violation)
+      - [P2005: Stored value is invalid](#p2005-stored-value-is-invalid)
+      - [P2006: `*`Type mismatch: invalid (ID/Date/Json/Enum)](#p2006-type-mismatch-invalid-iddatejsonenum)
+      - [P2007: `*`Type mismatch: invalid custom type](#p2007-type-mismatch-invalid-custom-type)
+      - [P2008: Query parsing failed](#p2008-query-parsing-failed)
+      - [P2009: Query validation failed](#p2009-query-validation-failed)
+    - [Migration Engine](#migration-engine)
+      - [P3000: Database creation failed](#p3000-database-creation-failed)
+      - [P3001: Destructive migration detected](#p3001-destructive-migration-detected)
+      - [P3002: Migration rollback](#p3002-migration-rollback)
+    - [Introspection](#introspection)
+      - [P4000: Introspection failed](#p4000-introspection-failed)
+    - [Schema Parser](#schema-parser)
+      - [P5000: Schema parsing failed](#p5000-schema-parsing-failed)
+      - [P5001: Schema relational ambiguity](#p5001-schema-relational-ambiguity)
+      - [P5002: Schema string input validation errors](#p5002-schema-string-input-validation-errors)
+  - [Photon.js](#photonjs)
+      - [Photon runtime validation error](#photon-runtime-validation-error)
+      - [Query engine connection error](#query-engine-connection-error)
+  - [Prisma Studio](#prisma-studio)
+  - [Prisma CLI](#prisma-cli)
+    - [Init](#init)
+      - [Directory already contains schema file](#directory-already-contains-schema-file)
+      - [Starter kit](#starter-kit)
+    - [Generate](#generate)
+    - [Dev](#dev)
+    - [Lift](#lift)
+    - [Introspect](#introspect)
+  - [Programmatic access](#programmatic-access)
 - [Unknown Errors](#unknown-errors)
   - [Unknown Error Template](#unknown-error-template)
-    - [Prisma 2 CLI](#prisma-2-cli)
-      - [Non-lift commands](#non-lift-commands)
-      - [Lift commands](#lift-commands)
-      - [Non-lift commands](#non-lift-commands-1)
-      - [Lift commands](#lift-commands-1)
-    - [Prisma Studio](#prisma-studio)
-    - [Photon JS](#photon-js)
-- [Known Errors](#known-errors)
-  - [Known Error Template](#known-error-template)
-    - [`error_code`](#error_code)
-    - [`error_category`](#error_category)
-      - [Different Layers](#different-layers)
-    - [`how_to_proceed`](#how_to_proceed)
-    - [`best_guess`](#best_guess)
-    - [`stack_trace`](#stack_trace)
-      - [Credential Masking](#credential-masking)
-  - [List of Known Errors](#list-of-known-errors)
-    - [Photon JS / Photon Go](#photon-js--photon-go)
-      - [Generation: Datamodel Syntax or Semantic Error](#generation-datamodel-syntax-or-semantic-error)
-      - [Runtime: Binary built for the wrong platform](#runtime-binary-built-for-the-wrong-platform)
-      - [Runtime: Permissions](#runtime-permissions)
-      - [Runtime: Connection failed](#runtime-connection-failed)
-    - [Query Engine](#query-engine)
-      - [`UniqueConstraintViolation: Unique constraint failed: ${field_name}`](#uniqueconstraintviolation-unique-constraint-failed-field_name)
-      - [`NullConstraintViolation: Null constraint failed: ${field_name}`](#nullconstraintviolation-null-constraint-failed-field_name)
-      - [`RecordDoesNotExist: Record does not exist`](#recorddoesnotexist-record-does-not-exist)
-      - [`ColumnDoesNotExist: Column does not exist`](#columndoesnotexist-column-does-not-exist)
-      - [`ConnectionError: Error creating a database connection`](#connectionerror-error-creating-a-database-connection)
-      - [`QueryError: Error querying the database`](#queryerror-error-querying-the-database)
-      - [`InvalidConnectionArguments: The provided arguments are not supported.`](#invalidconnectionarguments-the-provided-arguments-are-not-supported)
-      - [`ColumnReadFailure: The column value was different from the model`](#columnreadfailure-the-column-value-was-different-from-the-model)
-      - [`FieldCannotBeNull: Field cannot be null: ${field}`](#fieldcannotbenull-field-cannot-be-null-field)
-      - [`DomainError`](#domainerror)
-      - [`RecordNotFoundForWhere: Record not found`](#recordnotfoundforwhere-record-not-found)
-      - [`RelationViolation: Violating a relation ${relation_name} between ${model_a_name} and ${model_b_name}`](#relationviolation-violating-a-relation-relation_name-between-model_a_name-and-model_b_name)
-      - [`RecordsNotConnected: The relation ${} has no record for the model {} connected to a record for the model {} on your write path.`](#recordsnotconnected-the-relation--has-no-record-for-the-model--connected-to-a-record-for-the-model--on-your-write-path)
-      - [`ConversionError: Conversion error`](#conversionerror-conversion-error)
-      - [`DatabaseCreationError: Database creation error: ${error}`](#databasecreationerror-database-creation-error-error)
-    - [Migration Engine](#migration-engine)
-      - [`DataModelErrors`](#datamodelerrors)
-      - [`InitializationError`](#initializationerror)
-      - [`Generic`](#generic)
-      - [`ConnectorError`](#connectorerror)
-      - [`MigrationError`](#migrationerror)
-      - [`RollbackFailure`](#rollbackfailure)
+  - [Unknown Error Handling](#unknown-error-handling)
+    - [Photon.js](#photonjs-1)
+    - [Studio](#studio)
+    - [CLI](#cli)
+- [Error Log Masking](#error-log-masking)
+- [Open Questions?](#open-questions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Motivation
+
+![Prisma 2 architecture diagram with errors overlay](./errors-spec.png)
+
+| Component            | Description                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Systems that use SDK | Photon.js, Studio, Prisma CLI: dev, lift, generate commands, etc.                                  |
+| Prisma SDK           | Helps tools interact with binaries. Spec [here](../sdk-js/Readme.md)                               |
+| Core                 | Binary artifacts of Prisma 2 compilation and a part of the SDK. Spec [here](../binaries/Readme.md) |
+| Data source          | A database or any other data source supported by Prisma                                            |
+
+Prisma 2 ecosystem provides various layers of tools that communicate with each other to provide desired outcome.
+
+Broadly, the life-cycle of a request (Query request or CLI command) can be seen in this diagram.
+
+| System that uses SDK | →   | Prisma SDK | →   | Binaries | →   | Data source |
+| -------------------- | --- | ---------- | --- | -------- | --- | ----------- |
+
+
+Note: This spec is primarily targeted at users who would build tools using the Prisma SDK. The spec also targets users of those tools.
+
+# Error Causes and Handling Strategies
+
+There can be various reasons for a request/operation to fail. This section broadly classifies potential error causes and handling strategies.
+
+<details>
+<summary>Validation Errors</summary>
+<p>
+These are usually caused by faulty user input. For example,
+
+- Incorrect database credentials
+- Invalid data source URL
+- Malformed schema syntax
+
+Handling strategy: Any user input must be validated and user should be notified about the validation error details.
+
+</p>
+</details>
+
+<details>
+<summary>Data Error</summary>
+<p>These are usually caused when a database constraint fails. For example,
+
+- Record not found
+- Unique constraint violation
+- Foreign key constraint violation
+- Custom constraint violation
+
+Handling strategy: Domain errors would usually originate from the data source and the underlying message should be relayed to the user with some context.
+
+</p>
+</details>
+
+<details>
+<summary>Runtime Error</summary>
+<p>
+These are caused due to an error in Prisma runtime. For example,
+
+- The available binary is not compiled for this platform
+- SDK failed to bind a port for query engine
+- Database is not reachable
+- Database timeout
+
+Handling strategy: Notify the user by relaying the message from OS/Database and suggesting them to retry. They might need to free up resources or do something at the OS level.
+
+In certain cases, like when a port collision, Prisma SDK can try to retry gracefully as well with a different port.
+
+</p>
+</details>
+
+# Error Codes
+
+Error codes make identification/classification of error easier. Moreover, we can have internal range for different system components
+
+| Tool (Binary)        | Range | Description                                                                                                                                                                      |
+| -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Common               | 1000  | Common errors across all binaries. Common by itself is not a binary.                                                                                                             |
+| Query Engine         | 2000  | Query engine binary is responsible for getting data from data sources via connectors (This powers Photon). The errors in this range would usually be data constraint errors      |
+| Migration Engine     | 3000  | Migration engine binary is responsible for performing database migrations (This powers lift). The errors in this range would usually be schema migration/data destruction errors |
+| Introspection Engine | 4000  | Introspection engine binary is responsible for printing Prisma schema from an existing database. The errors in this range would usually be errors with schema inferring          |
+| Schema Parser        | 5000  | Schema parser is responsible for parsing the Prisma schema file. The errors in this range are usually syntactic or semantic errors.                                              |
+| Prisma Format        | 6000  | Prisma format powers the Prisma VSCode extension to pretty print the Prisma schema. The errors in this range are usually syntactic or semantic errors.                           |
+
+# Known Errors
+
+## Known Errors Template
+
+When we encounter a known error, we should try to convey enough information to the user so they get a good understanding of the error and can possibly unblock themselves.
+
+The format of our error should be the following:
+
+```
+{error_code}: {error_message}
+
+{serialized_meta_schema}
+
+Read more: {code_link}
+```
+
+| Template Field         | Description                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| error_code             | Code identifier of the encountered error                                             |
+| error_message          | Error message description that also contains a one liner for "how to fix" suggestion |
+| serialized_meta_schema | Serialization of the meta schema that might different for each error                 |
+| code_link              | Each error code has a permalink with detailed information                            |
+
+If we encounter a Rust panic, that is covered in the [Unknown Errors](#unknown-errors) section.
+
+## Prisma SDK
+
+SDK acts as the interface between the binaries and the tools. This section covers errors from SDK, binaries and the network between SDK ⇆ Binary and Binary ⇆ Data source.
+
+### Common
+
+#### P1000: Incorrect database credentials
+
+- **Description**: Authentication failed against database server at `${database_host}`, the provided database credentials for `${database_user}` are not valid. <br /> <br /> Please make sure to provide valid database credentials for the database server at `${database_host}`.
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Database host URI
+    database_host: string
+
+    // Database user name
+    database_user: string
+  }
+  ```
+
+- **Notes**: Might vary for different data source, For example, SQLite has no concept of user accounts, and instead relies on the file system for all database permissions. This makes enforcing storage quotas difficult and enforcing user permissions impossible.
+
+#### P1001: Database not reachable
+
+- **Description**: Can't reach database server at `${database_host}`:`${database_port}` <br /> <br /> Please make sure your database server is running at `${host}:${port}`.
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Database host URI
+    database_host: string
+
+    // Database port
+    database_port: number
+  }
+  ```
+
+#### P1002: Database timeout
+
+- **Description**: The database server at `${database_host}`:`${database_port}` was reached but timed out. <br /> <br /> Please try again. <br /> <br /> Please make sure your database server is running at `${host}:${port}`.
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Database host URI
+    database_host: string
+
+    // Database port
+    database_port: string
+  }
+  ```
+
+#### P1003: Database does not exist
+
+- **Description**: MySQL, Postgres: Database `${database_name}` does not exist on the database server at `${database_host}`. <br /> <br /> SQLite: Database `${database_file_name}` does not exist on the database server at `${database_file_path}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Database name for all data sources that support a database name
+    // SQLite: File name of the database
+    database_name: string
+
+    // Postgres only: Database schema name
+    database_schema_name: string
+
+    // All data sources that have a database host URI
+    // SQLite: Path to the database file
+    database_host: string
+  }
+  ```
+
+- **Notes**: Different consumers of the SDK might handle that differently. Lift save, for example, shows a interactive dialog for user to create it.
+
+#### P1004: Incompatible binary
+
+- **Description**: The downloaded/provided binary `${binary_path}` is not compiled for platform `${platform}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Fully resolved path of the binary file
+    binary_path: string
+
+    // Identifiers for the currently identified execution environment, e.g. `native`, `windows`, `darwin` etc
+    platform: string
+  }
+  ```
+
+#### P1005: Unable to start the query engine
+
+- **Description**: Failed to spawn the binary `${binary_path}` process for platform `${platform}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Fully resolved path of the binary file
+    binary_path: string
+
+    // Identifiers for the currently identified execution environment, e.g. `native`, `windows`, `darwin` etc
+    platform: string
+  }
+  ```
+
+#### P1006: Binary not found
+
+- **Description**: Photon binary for current platform `${platform}` could not be found. Make sure to adjust the generator configuration in the `schema.prisma` file. <br /> <br />`${generator_config}` <br /> <br />Please run `prisma2 generate` for your changes to take effect.
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Identifiers for the currently identified execution environment, e.g. `native`, `windows`, `darwin` etc
+    platform: string
+
+    // Details of how a generator can be added.
+    generator_config: string
+  }
+  ```
+
+- **Notes**: Tools (like Primsa CLI) consuming `generator_config` might color it using ANSI characters for better reading experience.
+
+#### P1007: Missing write access to download binary
+
+- **Description**: Please try installing Prisma 2 CLI again with the `--unsafe-perm` option. <br /> Example: `npm i -g --unsafe-perm prisma2`
+
+#### P1008: Database operation timeout
+
+- **Description**: Operations timed out after `${time}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Operation time in s or ms (if <1000ms)
+    time: number
+  }
+  ```
+
+#### P1009: Database already exists
+
+- **Description**: Database `${database_name}` already exists on the database server at `${database_host}:${database_port}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Database name, append `database_schema_name` when applicable
+    // `database_schema_name`: Database schema name (For Postgres for example)
+    database_name: string
+
+    // Database host URI
+    database_host: string
+
+    // Database port
+    database_port: number
+  }
+  ```
+
+#### P1010: Database access denied
+
+- **Description**: User `${database_user}` was denied access on the database `${database_name}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Database user name
+    database_user: string
+
+    // Database name, append `database_schema_name` when applicable
+    // `database_schema_name`: Database schema name (For Postgres for example)
+    database_name: string
+  }
+  ```
+
+### Query Engine
+
+Note: Errors with `*` in the title represent multiple types and are less defined.
+
+#### P2000: Input value too long
+
+- **Description**: The value `${field_value}` for the field `${field_name}` on the is too long for the field's type
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Concrete value provided for a field on a model in Prisma schema. Should be peeked/truncated if too long to display in the error message
+    field_value: string
+
+    // Field name from one model from Prisma schema
+    field_name: string
+  }
+  ```
+
+#### P2001: Record not found
+
+- **Description**: The record searched for in the where condition (`${model_name}.${argument_name} = ${argument_value}`) does not exist
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Model name from Prisma schema
+    model_name: string
+
+    // Argument name from a supported query on a Prisma schema model
+    argument_name: string
+
+    // Concrete value provided for an argument on a query. Should be peeked/truncated if too long to display in the error message
+    argument_value: string
+  }
+  ```
+
+#### P2002: Unique key violation
+
+- **Description**: Unique constraint failed on the field: `${field_name}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Field name from one model from Prisma schema
+    field_name: string
+  }
+  ```
+
+#### P2003: Foreign key violation
+
+- **Description**: Foreign key constraint failed on the field: `${field_name}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Field name from one model from Prisma schema
+    field_name: string
+  }
+  ```
+
+#### P2004: Constraint violation
+
+- **Description**: A constraint failed on the database: `${database_error}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Database error returned by the underlying data source
+    database_error: string
+  }
+  ```
+
+#### P2005: Stored value is invalid
+
+- **Description**: The value `${field_value}` stored in the database for the field `${field_name}` is invalid for the field's type
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Concrete value provided for a field on a model in Prisma schema. Should be peeked/truncated if too long to display in the error message
+    field_value: string
+
+    // Field name from one model from Prisma schema
+    field_name: string
+  }
+  ```
+
+#### P2006: `*`Type mismatch: invalid (ID/Date/Json/Enum)
+
+- **Description**: The provided value `${field_value}` for `${model_name}` field `${field_name}` is not valid
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Concrete value provided for a field on a model in Prisma schema. Should be peeked/truncated if too long to display in the error message
+    field_value: string
+
+    // Model name from Prisma schema
+    model_name: string
+
+    // Field name from one model from Prisma schema
+    field_name: string
+  }
+  ```
+
+- **Notes**: Details are not finalized. The current idea is that any variable coercion will happen in the query engine. Json might be recognized as a native Prisma scalar. This also brings up the question of shims. Clarity in those parts of the spec would help us answer this. The same questions apply to bring your own ID feature, will we recognize all known ID types (like uuid, cuid, MongoID) and validate them in any later before it hits the database?
+
+#### P2007: `*`Type mismatch: invalid custom type
+
+- **Description**: Data validation error `${database_error}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Database error returned by the underlying data source
+    database_error: string
+  }
+  ```
+- **Notes**: Details are not finalized. The current idea is that Photon, Query Engine will simply pass through the data and rely on database for data validation.
+
+#### P2008: Query parsing failed
+
+- **Description**: Failed to parse the query `${query_parsing_error}` at `${query_position}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Error(s) encountered when trying to parse a query in the query engine
+    query_parsing_error: string
+
+    // Location of the incorrect parsing, validation in a query. Represented by tuple or object with (line, character)
+    query_position: string
+  }
+  ```
+
+- **Notes**: This is unexpected from Photon (if they do it is a bug in Photon) but they are useful for anyone writing a query builder on top of the query engine.
+
+#### P2009: Query validation failed
+
+- **Description**: Failed to validate the query `${query_validation_error}` at `${query_position}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Error(s) encountered when trying to validate a query in the query engine
+    query_validation_error: string
+
+    // Location of the incorrect parsing, validation in a query. Represented by tuple or object with (line, character)
+    query_position: string
+  }
+  ```
+
+- **Notes**: This is unexpected from Photon (if they do it is a bug in Photon) but they are useful for anyone writing a query builder on top of the query engine.
+
+### Migration Engine
+
+#### P3000: Database creation failed
+
+- **Description**: Failed to create database: `${database_error}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Database error returned by the underlying data source
+    database_error: string
+  }
+  ```
+
+#### P3001: Destructive migration detected
+
+- **Description**: Migration possible with destructive changes and possible data loss: `${migration_engine_destructive_details}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Details of a destructive migration from the migration engine
+    migration_engine_destructive_details: string
+  }
+  ```
+
+#### P3002: Migration rollback
+
+- **Description**: The attempted migration was rolled back: `${database_error}`
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Database error returned by the underlying data source
+    database_error: string
+  }
+  ```
+
+### Introspection
+
+#### P4000: Introspection failed
+
+- **Description**: Introspection operation failed to produce a schema file: `${introspection_error}`.
+- **Meta schema**:
+  ```ts
+  type Meta = {
+    // Generic error received from the introspection engine. Indicator of why an introspection failed
+    introspection_error: string
+  }
+  ```
+
+### Schema Parser
+
+#### P5000: Schema parsing failed
+
+- **Description**: Failed to parse schema file: `${schema_parsing_error}` at `${schema_position}`
+- **Meta schema**:
+
+  ```ts
+  type Position = {
+    line: number
+    character: number
+  }
+
+  type Meta = {
+    // Error(s) encountered when trying to parse the schema in the schema parser
+    schema_parsing_error: string
+
+    // Location of the incorrect parsing, validation in the schema. Represented by tuple or object with (line, character)
+    schema_position: Position
+  }
+  ```
+
+#### P5001: Schema relational ambiguity
+
+- **Description**: There is a relational ambiguity in the schema file between the models `${A}` and `${B}`.
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Concrete name of model from Prisma schema that has an ambiguity
+    A: string
+
+    // Concrete name of model from Prisma schema that has an ambiguity
+    B: string
+  }
+  ```
+
+#### P5002: Schema string input validation errors
+
+- **Description**: Database URL provided in the schema failed to parse: `${schema_sub_parsing_error}` at `${schema_position}`
+- **Meta schema**:
+
+  ```ts
+  type Position = {
+    line: number
+    character: number
+  }
+
+  type Meta = {
+    // Error(s) encountered when trying to parse a string input to the schema in the schema parser (Like database URL)
+    schema_sub_parsing_error: string
+
+    // Location of the incorrect parsing, validation in the schema. Represented by tuple or object with (line, character)
+    schema_position: Position
+  }
+  ```
+
+## Photon.js
+
+#### Photon runtime validation error
+
+- **Description**: Validation Error: `${photon_runtime_error}`
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Photon runtime error describing a validation error like missing argument or incorrect data type.
+    photon_runtime_error: string
+  }
+  ```
+
+- **Notes**: Photon might use ANSI characters to color the response for a better reading experience. Disabling that feature is documented [here](https://github.com/prisma/specs/tree/master/photonjs#error-character-encoding).
+
+#### Query engine connection error
+
+- **Description**: The query engine process died, please restart the application
+
+---
+
+Additionally, Photon relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P2000`, `P2001` , `P2002`, `P2003`, `P2004`, `P2005`, `P2006`, `P2007`, `P2008`, `P2009`.
+
+Note: For `P1006`, Photon provides additional information in case it detects that the binary is incorrectly pinned.
+
+## Prisma Studio
+
+Note: Studio has two workflows:
+
+Electron app: Credentials from the UI → Introspection → Prisma schema → Valid Prisma project
+Web app: `prisma2 dev` → Provides Prisma schema i.e a Valid Prisma project
+
+Since studio uses Photon for query building. It relays the same error messages as Photon. Additionally, it relays the following errors from the SDK: `P3000`, `P5000`
+
+## Prisma CLI
+
+Note that Prisma CLI must exit with a non-zero exit code when it encounters an error from which it cannot recover.
+
+### Init
+
+#### Directory already contains schema file
+
+- **Description**: Directory `${folder_name}` is an existing Prisma project
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Folder name of current working directory (Equivalent of folder name from unix `pwd`)
+    folder_name: string
+  }
+  ```
+
+#### Starter kit
+
+- **Description**: Directory `${folder_name}` is not empty
+- **Meta schema**:
+
+  ```ts
+  type Meta = {
+    // Folder name of current working directory (Equivalent of folder name from unix `pwd`)
+    folder_name: string
+  }
+  ```
+
+Init command relays the following errors from the SDK: `P3000`, `P4000`
+
+More issues for init command failures are covered here: https://prisma-specs.netlify.com/cli/init/errors/
+
+### Generate
+
+Generate command relays the following errors from the SDK: `P5000`, `P5001`, `P5002`
+
+### Dev
+
+Dev command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P3000`, `P3001`, `P5000`, `P5001`, `P5002`
+
+### Lift
+
+Lift commands relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P3000`, `P3001`, `P5000`, `P5001`, `P5002`
+
+### Introspect
+
+Introspect command relays the following errors from the SDK: `P1000`, `P1001` , `P1002`, `P1003`, `P1004`, `P1005`, `P1006`, `P4000`
+
+## Programmatic access
+
+Many of these errors from the previous section are expected to be consumed programmatically.
+
+`Photon.js`: In user's code base
+`Prisma SDK`: Lift etc, in the tools that use Prisma SDK
+
+Therefore, they should be consumable programmatically and have an error structure:
+
+Error object:
+
+```json
+{
+  "code": "<ERROR_CODE>",
+  "message": "<ERROR_MESSAGE>",
+  "meta": "<meta-schema-object>"
+}
+```
+
+Serialization of the error message (default `toString`) will have the following template:
+
+```
+${ERROR_CODE}: ${ERROR_MESSAGE}
+```
 
 # Unknown Errors
 
@@ -68,195 +729,33 @@ As Prisma 2 is still early, we're not yet aware of all error cases that can occu
 
 An error can occur in any of the following tools that currently make up Prisma 2's developer surface area:
 
-- Prisma 2 CLI
-- Prisma Studio
-- Photon JS
+- Photon.js
+- Studio
+- CLI
 
-When an unknown error occurs, **our primary goal** is to get the user to report it by creating a new GitHub issue.
+When an unknown error occurs, **our primary goal** is to get the user to report it by creating a new GitHub issue or send the error report to us via telemetry.
 
-Error messages should include clear guidelines of where to report the issue and what information to include. The following sections provide the templates for
-these error message per tool.
+Error messages should include clear guidelines of where to report the issue and what information to include. The following sections provide the templates for these error message per tool.
 
 ## Unknown Error Template
 
-Additionally to showing the the error message directly to the user by printing it to the console, we also want to provide rich error reports that users can use
-to report the issue. These error reports are stored as markdown files on the file system. Therefore, each tool has two templates:
+Additionally to showing the the error message directly to the user by printing it to the console, we also want to provide rich error reports that users can use to report the issue manually via Github issue or automatically via telemetry. These error reports are stored as markdown files or zip files on the file system. Therefore, each tool has two templates:
 
 - **Logging output** directly shown to the user
-- **Error report** (Markdown) stored on the file system
+- **Error report** (markdown or a zip file) stored on the file system
 
 The error report generally is more exhaustive than the logging output (e.g. it also contains the Prisma schema which would be overkill if printed to the terminal as well). It is also written in Markdown enabling the user to copy and paste the report as a GitHub issue directly.
 
-### Prisma 2 CLI
+## Unknown Error Handling
 
-<Details><Summary>Logging output</Summary>
+### Photon.js
 
-#### Non-lift commands
+On encountering an unexpected error, Photon should inform the user and prepare an error report with context of the issue and masked sensitive information to be shared manually or via telemetry.
 
-```
-Oops, an unexpected error occured! Find more info in the error report:
-**/path/to/dir/prisma-error-TIMESTAMP.md**
-
-Please help us fix the problem!
-
-Copy the error report and paste it as a GitHub issue here:
-**https://www.github.com/prisma/prisma2/issues**
-
-Thanks for helping us making Prisma 2 more stable! 🙏
-```
-
-#### Lift commands
+<details><Summary>Logging output</Summary>
 
 ```
-Oops, an unexpected error occured! Find more info in the error reports:
-**/path/to/dir/prisma-error-TIMESTAMP.zip**
-
-Please help us fix the problem!
-
-Create a new GitHub issue and attach **prisma-error-TIMESTAMP.zip** to it:
-**https://www.github.com/prisma/lift/issues**
-
-Thanks for helping us making Prisma 2 more stable! 🙏
-```
-
-> Note: Text enclosed by the double-asterisk `**` means the text should be printed in **bold**.
-
-</Details>
-
-<Details><Summary>Error report</Summary>
-
-#### Non-lift commands
-
-File name: `prisma-error-TIMESTAMP.md` where `TIMESTAMP` is a placeholder for the current timestamp.
-
-```
-# Error report (Prisma 2 CLI | July 23, 2019 | 14:42:23 h)
-
-This is an exhaustive report containing all relevant information about the error.
-
-**Please post this report as a GitHub issue so we can fix the problem: https://github.com/prisma/prisma2/issues** 🙏
-
-## Stack trace
-
-${stacktrace}
-
-## System info
-
-${uname -a}
-
-## Prisma 2 CLI version
-
-${prisma2 -v}
-
-## Prisma schema file
-
-${schema.prisma}
-```
-
-> **Note**: The connection strings for the data sources in the Prisma schema file must be obscured!
-
-#### Lift commands
-
-File name: `prisma-error-TIMESTAMP.zip` where `TIMESTAMP` is a placeholder for the current timestamp.
-
-The `.zip`-directory contains:
-
-- Relevant info from the query engine
-- `error-report.md` (see below)
-
-```
-# Error report (Prisma 2 CLI (Lift) | July 23, 2019 | 14:42:23 h)
-
-This is an exhaustive report containing all relevant information about the error.
-
-**Please post this report as a GitHub issue and also attach `prisma-error-TIMESTAMP.zip` so we can fix the problem: https://github.com/prisma/lift/issues** 🙏
-
-## Stack trace
-
-${stacktrace}
-
-## System info
-
-${uname -a}
-
-## Prisma 2 CLI version
-
-${prisma2 -v}
-
-## Prisma schema file
-
-${schema.prisma}
-```
-
-> **Note**: The connection strings for the data sources in the Prisma schema file must be obscured!
-
-> **Question**: Should/can we also include info about the DB? E.g. which version of MySQL/PostgreSQL is being used?
-
-</Details>
-
-### Prisma Studio
-
-<Details><Summary>Logging output</Summary>
-
-```
-Oops, an unexpected error occured! Find more info in the error report:
-**/path/to/dir/prisma-error-TIMESTAMP.md**
-
-Please help us fix the problem!
-
-Copy the error report and paste it as a GitHub issue here:
-**https://www.github.com/prisma/prisma2/issues**
-
-Thanks for helping us making Prisma 2 more stable! 🙏
-```
-
-> Note: Text enclosed by the double-asterisk `**` means the text should be printed in **bold**.
-
-</Details>
-
-<Details><Summary>Error report</Summary>
-
-File name: `prisma-error-TIMESTAMP.md` where `TIMESTAMP` is a placeholder for the current timestamp.
-
-```
-# Error report (Prisma Studio | July 23, 2019 | 14:42:23 h)
-
-This is an exhaustive report containing all relevant information about the error.
-
-**Please post this report as a GitHub issue so we can fix the problem: https://github.com/prisma/prisma2/issues** 🙏
-
-## Stack trace
-
-${stacktrace}
-
-## System info
-
-${uname -a}
-
-## Browser info
-
-${browserInfo}
-
-## Prisma 2 CLI version
-
-${prisma2 -v}
-
-## Prisma schema file
-
-${schema.prisma}
-```
-
-> **Note**: The connection strings for the data sources in the Prisma schema file must be obscured!
-
-</Details>
-
-### Photon JS
-
-<Details><Summary>Logging output</Summary>
-
-```
-Oops, an unexpected error occured. This is a problem with 
-Photon's query engine, not with your application code.
+Oops, an unexpected error occurred.
 
 Find more info in the error report:
 **/path/to/dir/prisma-error-TIMESTAMP.md**
@@ -266,20 +765,20 @@ Please help us fix the problem!
 Copy the error report and paste it as a GitHub issue here:
 **https://www.github.com/prisma/photonjs/issues**
 
-Thanks for helping us making Photon JS more stable! 🙏
+Thanks for helping us making Photon.js more stable! 🙏
 
-An internal error occured during invocation of **photon.users.create()** in **/path/to/dir/src/.../file.ts**
+An internal error occurred during invocation of **photon.users.create()** in **/path/to/dir/src/.../file.ts**
 
   ${userStackTrace}
 ```
 
 > Note: Text enclosed by the double-asterisk `**` means the text should be printed in **bold**.
 
-</Details>
+</details>
 
-<Details><Summary>Error report</Summary>
+<details><Summary>Error report</Summary>
 
-File name: `prisma-error-TIMESTAMP.md` where `TIMESTAMP` is a placeholder for the current timestamp.
+File name: `prisma-error.md` is created inside the project directory on first error and is appended to on subsequent errors.
 
 ```
 # Error report (Photon JS | July 23, 2019 | 14:42:23 h)
@@ -311,447 +810,93 @@ ${index.d.ts}
 
 > **Note**: The connection strings for the data sources in the Prisma schema file must be obscured!
 
-</Details>
+</details>
 
-# Known Errors
+### Studio
 
-Whenever we show an error, we should always show a path forward towards resolution. If we don't know the path forward, we should atleast link to a place to get
-help.
+On encountering an unexpected error, Studio should inform the user and prepare an error report with context of the issue and masked sensitive information to be shared manually or via telemetry.
 
-## Known Error Template
-
-The format of our error should be the following:
+<details><Summary>Logging output</Summary>
 
 ```
-${error_code} ${error_category}: ${best_guess}? ${error_message}.
+Oops, an unexpected error occurred! Find more info in the error report:
+**/path/to/dir/prisma-error-TIMESTAMP.md**
 
-${how_to_proceed}
+Please help us fix the problem!
 
-Stack Trace:
+Copy the error report and paste it as a GitHub issue here:
+**https://www.github.com/prisma/prisma2/issues**
 
-${stack_trace}
+Thanks for helping us making Prisma 2 more stable! 🙏
 ```
 
-Here's an example:
+> Note: Text enclosed by the double-asterisk `**` means the text should be printed in **bold**.
+
+</details>
+
+<details><Summary>Error report</Summary>
+
+File name: `studio-error-TIMESTAMP.zip` where `TIMESTAMP` is a placeholder for the current timestamp. It would contain the migrations and schema files with sensitive information redacted (see [Error Log Masking](#error-log-masking)) and an information file containing the error report:
 
 ```
-QE001 ConnectionError: Is postgres running? We couldn't connect to the query engine on postgresql://localhost:5432.
+# Error report (Prisma Studio | July 23, 2019 | 14:42:23 h)
 
-You can find `ConnectionError` documentation here: https://prisma.io/docs/xxx
-You can post an question or issue here: https://github.com/prisma/photonjs/issues
+This is an exhaustive report containing all relevant information about the error.
 
-Stack Trace:
+**Please post this report as a GitHub issue so we can fix the problem: https://github.com/prisma/prisma2/issues** 🙏
 
-ConnectorError(QueryError(Error { kind: FromSql, cause: Some(WrongType(Type(Timestamptz))) }\ \ stack backtrace:\ 0: failure::backtrace::internal::InternalBacktrace::new::h84e0252f893b7b0e (0x55a8a0489290)\ 1: failure::backtrace::Backtrace::new::h381a1eb507d04e2c (0x55a8a0489440)\ 2: <sql_connector::error::SqlError as core::convert::From<tokio_postgres::error::Error>>::from::h34ff4340a0dd5b3f (0x55a89febbc67)\ 3: sql_connector::database::postgresql::<impl sql_connector::row::ToSqlRow for tokio_postgres::row::Row>::to_sql_row::convert::h178249b965d8493a (0x55a89fe2686b)\ 4: sql_connector::database::postgresql::<impl sql_connector::row::ToSqlRow for tokio_postgres::row::Row>::to_sql_row::h3875436f09b0556f (0x55a89fe368ff)\ 5: sql_connector::database::postgresql::<impl sql_connector::transactional::Transaction for postgres::transaction::Transaction>::filter::h498f6550aa3967b1 (0x55a89fe9156a)\ 6: <sql_connector::database::postgresql::PostgreSql as sql_connector::transactional::Transactional>::with_transaction::hd5f1950fe91ab7e3 (0x55a89fbe22a8)\ 7: sql_connector::transactional::database_reader::<impl connector::database_reader::DatabaseReader for sql_connector::database::SqlDatabase<T>>::get_related_records::h291c7a1f45dc7434
+## Stack trace
+
+${stacktrace}
+
+## System info
+
+${uname -a}
+
+## Browser info
+
+${browserInfo}
+
+## Prisma 2 CLI version
+
+${prisma2 -v}
+
+## Prisma schema file
+
+${schema.prisma}
 ```
 
-### `error_code`
+> **Note**: The connection strings for the data sources in the Prisma schema file must be obscured!
 
-**required**
+</details>
 
-A unique error across all the products. Error codes will have a 2 or 3-letter prefix to categorize the error and 3 digits to uniquely identify the error.
+Note that studio can also yield Photon errors as it uses Photon internally. The error log generation in that case would be done by Photon but the UI to prompt user to create a Github issue or send it to us would be handled by Studio.
 
-| Prefix |      Category      |
-| :----: | :----------------: |
-|  PJS   |     Photon JS      |
-|  PGO   |     Photon Go      |
-|   QE   |    Query Engine    |
-|   ME   |  Migration Engine  |
-|  CPG   | Connector Postgres |
-|  CMS   |  Connector MySQL   |
-|  CSQ   |  Connector SQLite  |
-|  CMG   |  Connector Mongo   |
-|  CDD   | Connector DynamoDB |
+### CLI
 
-The error codes will also have a 3-digit number identifying the unique error, starting at 001. As we discover or add more errors, we'll increment this number
-(e.g. 002, 003, ...)
+Note that Prisma CLI must exit with a non-zero exit code when it encounters an error from which it cannot recover.
 
-### `error_category`
+On encountering an unexpected error, CLI should inform the user and prepare an error report with context of the issue.
 
-**required**
+File name: `prisma-error-TIMESTAMP.zip` where `TIMESTAMP` is a placeholder for the current timestamp. It would contain the migrations and schema files with sensitive information redacted (see [Error Log Masking](#error-log-masking)).
 
-Is it a connection error? Is it a configuration error? These errors will come from the codebase and will give the error a name. This will help the user identify
-what type of error occurred.
+This is covered in the [CLI error handling spec](https://prisma-specs.netlify.com/cli/error-handling/).
 
-#### Different Layers
+# Error Log Masking
 
-Errors can bubble up from different layers. Depending on the engineering effort, a breadcrumb of errors would be very helpful. Otherwise the original "deepest"
-error in the stack is the most helpful and should be bubbled up unwraped.
+Both logging output, error report might contain logs with sensitive information like database URL. Prisma 2 should mask the sensitive information (with asterisks `********`) before dumping the data on the file system.
 
-|     Layers      |
-| :-------------: |
-|     Photon      |
-|  Query Parser   |
-| Query Execution |
-|    Connector    |
+The error report to be sent back automatically might also contain some proprietary information like the database schema via Prisma schema file.
 
-**TODO**: Rust already wraps errors at each layer. How difficult would it be to have a breadcrumb system?
+We must ask the user before collecting such information. This is covered in the [telemetry spec](https://prisma-specs.netlify.com/cli/telemetry/).
 
-- e.g. `Photon Error < Connector Error < SQL Connector Error`
+# Open Questions?
 
-### `how_to_proceed`
+- Batch API and errors? Discussion https://www.notion.so/prismaio/Errors-Spec-Error-Arrays-4160085305444374a74f6a81b785e57a
 
-**required**
+- Single errors or error arrays? (in the GraphQL layer for example?) Discussion https://www.notion.so/prismaio/Errors-Spec-Error-Arrays-4160085305444374a74f6a81b785e57a
 
-Whenever an error occurs, we should always show the user a path out of their current predicament. The more time they spend debugging, the less time they have
-building things on top of Prisma and telling their friends about it.
+- Error slugs in place of error codes like: https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin/src/rules
+  -- A downside of error codes is that it makes reordering errors (in the spec) cumbersome.
 
-We will try to be as helpful as we can here:
-
-- **required** tell them where they can post a question or create an issue.
-  - e.g. "You can post an question or issue here: https://github.com/prisma/photonjs/issues"
-- **encouraged** If we have documentation for this error, provide a URL to that documentation
-  - e.g. "You can find `ConnectionError` documentation here: https://prisma.io/docs/xxx"
-
-### `best_guess`
-
-**encouraged**
-
-Oftentimes, we have a pretty good guess as to what the problem is. Why not ask the user to double-check their setup?
-
-It should be a question and never be condescending.
-
-- **DO:** "Is Postgres running?"
-- **DONT:** "Your Postgres probably isn't runninng"
-
-### `stack_trace`
-
-The stack trace is the raw error from either Typescript or Rust.
-
-Ideally we can clean it up a bit with [clean-stack](https://github.com/sindresorhus/clean-stack) on the Javascript-side. In Rust, we should research or create a
-stack trace formatter.
-
-#### Credential Masking
-
-We may see credentials in the stack trace. It's very important that we hide this information. Sensitive information should be hidden with astericks `********`.
-
-## List of Known Errors
-
-This is a list of currently known errors. We'll update this list as more error conditions are required
-
-### Photon JS / Photon Go
-
-#### Generation: Datamodel Syntax or Semantic Error
-
-Occurs when our schema has a syntax error.
-
-#### Runtime: Binary built for the wrong platform
-
-This isn't an exhaustive list, but should give you a good idea of what kind of errors you'll encounter if you pass in the wrong binaries
-
-|   Query Engine Binary   |                      OSX                      |                                   ubuntu:latest (w/ `apt install openssl`)                                    |
-| :---------------------: | :-------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: |
-|         darwin          |                      ok                       |                                 cannot execute binary file: Exec format error                                 |
-|       linux-glibc       | cannot execute binary file: Exec format error |                                                      ok                                                       |
-| linux-glibc-libssl1.0.1 | cannot execute binary file: Exec format error | error while loading shared libraries: libssl.so.10: cannot open shared object file: No such file or directory |
-| linux-glibc-libssl1.0.2 | cannot execute binary file: Exec format error | error while loading shared libraries: libssl.so.10: cannot open shared object file: No such file or directory |
-|       linux-musl        | cannot execute binary file: Exec format error | error while loading shared libraries: libssl.so.10: cannot open shared object file: No such file or directory |
-
-#### Runtime: Permissions
-
-If the binary isn't an executable (`chmod +x`), then we'll run into `./darwin: Permission denied`. Photon checks for this so it shouldn't really happen.
-
-#### Runtime: Connection failed
-
-This shouldn't really happen now without an error from the query engine, but when we start needing to make network requests, we'll need to account for
-connection errors.
-
-### Query Engine
-
-Query engine errors will need to be handled by Photon.
-
-#### `UniqueConstraintViolation: Unique constraint failed: ${field_name}`
-
-Occurs when SQL returns a unique constraint violation.
-
-```rust
-rusqlite::Error::SqliteFailure(
-    ffi::Error {
-        code: ffi::ErrorCode::ConstraintViolation,
-        extended_code: 2067,
-    },
-    Some(description),
-)
-```
-
-#### `NullConstraintViolation: Null constraint failed: ${field_name}`
-
-Occurs when SQL returns a null constraint violation.
-
-```rust
-rusqlite::Error::SqliteFailure(
-    ffi::Error {
-        code: ffi::ErrorCode::ConstraintViolation,
-        extended_code: 1299,
-    },
-    Some(description),
-)
-```
-
-#### `RecordDoesNotExist: Record does not exist`
-
-Occurs when a query doesn't return any rows.
-
-```rust
-rusqlite::Error::QueryReturnedNoRows => SqlError::RecordDoesNotExist,
-```
-
-**TODO** I think we should probably rename back to `QueryReturnedNoRows`. `RecordDoesNotExist` implies a single result not existing.
-
-#### `ColumnDoesNotExist: Column does not exist`
-
-This can occur if we try pulling a result value from SQL that we didn't request. I don't think this one will happen much (famous last words). It seems like it's
-usually a for loop mistake.
-
-```rust
-SqlError::ColumnDoesNotExist => ConnectorError::ColumnDoesNotExist,
-```
-
-#### `ConnectionError: Error creating a database connection`
-
-This error happens when we're unable to connect to the database.
-
-**Connection Pooling Error**
-
-```rust
-impl From<r2d2::Error> for SqlError {
-    fn from(e: r2d2::Error) -> SqlError {
-        SqlError::ConnectionError(e.into())
-    }
-}
-```
-
-**TLS Connection Error**
-
-```rust
-#[cfg(feature = "postgresql")]
-impl From<native_tls::Error> for SqlError {
-    fn from(e: native_tls::Error) -> SqlError {
-        SqlError::ConnectionError(e.into())
-    }
-}
-```
-
-#### `QueryError: Error querying the database`
-
-Generic query error. This is the fallback if we can't determine what kind of query error was returned.
-
-```rust
-e => SqlError::QueryError(e.into()),
-```
-
-#### `InvalidConnectionArguments: The provided arguments are not supported.`
-
-This can occur when we pass an argument into the connection string that is either invalid or we don't yet support.
-
-```rust
-"connection_limit" => {
-    let as_int: u32 =  v.parse().map_err(|_|SqlError::InvalidConnectionArguments)?;
-    connection_limit = as_int;
-}
-```
-
-#### `ColumnReadFailure: The column value was different from the model`
-
-Serialization has failed.
-
-**TODO** Not sure if this is for serialization, deserialization or both.
-
-```rust
-impl From<uuid::parser::ParseError> for SqlError {
-    fn from(e: uuid::parser::ParseError) -> SqlError {
-        SqlError::ColumnReadFailure(e.into())
-    }
-}
-
-impl From<uuid::BytesError> for SqlError {
-    fn from(e: uuid::BytesError) -> SqlError {
-        SqlError::ColumnReadFailure(e.into())
-    }
-}
-
-impl From<FromUtf8Error> for SqlError {
-    fn from(e: FromUtf8Error) -> SqlError {
-        SqlError::ColumnReadFailure(e.into())
-    }
-}
-```
-
-#### `FieldCannotBeNull: Field cannot be null: ${field}`
-
-Prisma-level null check constraint. This will have some overlap with `NullConstraintViolation`, which comes from the database
-
-```rust
-if field.is_required && value.is_null() {
-    return Err(SqlError::FieldCannotBeNull {
-        field: field.name.clone(),
-    });
-}
-```
-
-#### `DomainError`
-
-**TODO** When does this occur?
-
-- Domain::FieldNotFound
-- Domain::ScalarFieldNotFound
-- Domain::RelationFieldNotFound
-- Domain::FieldForRelationNotFound
-- Domain::ModelNotFound
-- Domain::RelationNotFound
-- Domain::ConversionFailure
-- Domain::ModelForRelationNotFound
-
-#### `RecordNotFoundForWhere: Record not found`
-
-Prisma-level null check constraint. This will have some overlap with `RecordDoesNotExist`, which comes from the database.
-
-```rust
-RootWriteQuery::UpsertRecord(ref ups) => match conn.find_id(&ups.where_) {
-    Err(_e @ SqlError::RecordNotFoundForWhere { .. }) => Ok(create(conn, &ups.create)?),
-    Err(e) => return Err(e.into()),
-    Ok(_) => Ok(update(conn, &ups.update)?),
-},
-```
-
-#### `RelationViolation: Violating a relation ${relation_name} between ${model_a_name} and ${model_b_name}`
-
-Prisma-level violation when a write violates a relationship in the schema.
-
-```rust
-if self.top_is_create {
-    match (p.is_list, p.is_required, c.is_list, c.is_required) {
-        (false, true, false, true) => Err(self.relation_violation()),
-    }
-}
-```
-
-#### `RecordsNotConnected: The relation ${} has no record for the model {} connected to a record for the model {} on your write path.`
-
-Prisma-level error when you try connecting to a record that doesn't exist
-
-```rust
-let child_id = conn
-    .find_id_by_parent(Arc::clone(&relation_field), parent_id, record_finder)
-    .map_err(|e| match e {
-        SqlError::RecordsNotConnected {
-            relation_name,
-            parent_name,
-            parent_where: _,
-            child_name,
-            child_where,
-        }
-    }
-```
-
-#### `ConversionError: Conversion error`
-
-This error can occur while constructing a Prisma 2 Schema
-
-```rust
-load_v2_dml_string().inner_map(|dml_string| match datamodel::parse(&dml_string) {
-    Err(errors) => Err(PrismaError::ConversionError(errors, dml_string.clone())),
-    Ok(dm) => match datamodel::load_configuration(&dml_string) {
-        Err(errors) => Err(PrismaError::ConversionError(errors, dml_string.clone())),
-        Ok(configuration) => {
-            debug!("Loaded Prisma v2 data model.");
-            Ok(Some(DatamodelV2Components {
-                datamodel: dm,
-                data_sources: configuration.datasources,
-            }))
-        }
-    },
-})
-```
-
-#### `DatabaseCreationError: Database creation error: ${error}`
-
-Occurs when you pass in an invalid connection string
-
-```rust
-if file_path.exists() && !file_path.is_dir() {
-    Sqlite::new(normalized.into(), 10, false)
-} else {
-    Err(SqlError::DatabaseCreationError(
-        "Sqlite data source must point to an existing file.",
-    ))
-}
-```
-
-### Migration Engine
-
-#### `DataModelErrors`
-
-This error occurs when there is no datasource in the schema.
-
-```rust
-let source = config.datasources.first().ok_or(CommandError::DataModelErrors {
-    code: 1000,
-    errors: vec!["There is no datasource in the configuration.".to_string()],
-})?;
-```
-
-#### `InitializationError`
-
-**TODO** This doesn't seem to be in use.
-
-#### `Generic`
-
-Generic error that can occur in a couple different ways:
-
-**Parsing the schema fails**
-
-```rust
-pub fn parse_datamodel(datamodel: &str) -> CommandResult<Datamodel> {
-    let result = datamodel::parse_with_formatted_error(&datamodel, "datamodel file, line");
-    result.map_err(|e| CommandError::Generic { code: 1001, error: e })
-}
-```
-
-**TODO** Make this more specific. It seems like all the submodule-specific errors end up getting wrapped into this generic error.
-
-#### `ConnectorError`
-
-Connection errors can occur whenever you connect to the database. In the migration engine, this can happen when you initialize the connection or reset the
-database.
-
-```rust
-fn initialize(&self) -> ConnectorResult<()>;
-fn reset(&self) -> ConnectorResult<()>;
-pub type ConnectorResult<T> = Result<T, ConnectorError>;
-```
-
-#### `MigrationError`
-
-Migration errors occur when we detect a destructive change
-
-**TODO** verify
-
-```rust
-#[allow(unused, dead_code)]
-impl DestructiveChangesChecker<SqlMigration> for SqlDestructiveChangesChecker {
-    fn check(&self, database_migration: &SqlMigration) -> Vec<MigrationErrorOrWarning> {
-        vec![]
-    }
-}
-```
-
-#### `RollbackFailure`
-
-Rollback errors occur when we try to unapply a migration but fail.
-
-```rust
-match unapply_result {
-    Ok(()) => {
-        migration_updates.status = MigrationStatus::RollbackSuccess;
-        self.migration_persistence.update(&migration_updates);
-        Ok(())
-    }
-    Err(err) => {
-        migration_updates.status = MigrationStatus::RollbackFailure;
-        migration_updates.errors = vec![format!("{:?}", err)];
-        self.migration_persistence.update(&migration_updates);
-        Err(err)
-    }
-}
-```
+- Should known errors have a CTA? To create a GH issue? That might help funnel user input for better developer experience. This also teaches users about multiple repositories.
